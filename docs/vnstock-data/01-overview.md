@@ -94,9 +94,8 @@ from vnstock_data import Reference, Market, Fundamental, Analytics, Insights, Ma
 from vnstock_data import show_api, show_doc  # Tra cứu cấu trúc tính năng
 
 # Tra cứu cấu trúc tính năng
-show_api()                                # Xem toàn bộ cây tính năng
-show_api('Fundamental.equity')            # Tính năng Deep Dive: Cô lập & xem chi tiết 1 nhánh API
-show_doc('Reference.company')             # Đọc hướng dẫn chi tiết (hỗ trợ string hoặc truyền thẳng hàm)
+show_api()                    # Xem toàn bộ cây tính năng
+show_doc(Reference.company)   # Đọc hướng dẫn chi tiết
 
 # Sử dụng chaining API
 ref = Reference()

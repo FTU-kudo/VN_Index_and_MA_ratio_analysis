@@ -415,7 +415,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`bid_vol`** | `float64` | Volume khối lượng Bid | `154400` |
 
 
-### `market.equity.block_trades`
+### `Market().equity("SYMBOL").block_trades`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`symbol`** | `object (str)` | Mã định danh chứng khoán / Chỉ số | `FPT` |
@@ -427,7 +427,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`reference_price`** | `float64` | Mức giá / Giá trị tài sản (VND) | `85500.0` |
 | **`floor_price`** | `float64` | Mức giá / Giá trị tài sản (VND) | `85500.0` |
 
-### `market.equity.foreign_flow`
+### `Market().equity("SYMBOL").foreign_flow`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`trading_date`** | `datetime64[ns]` | Dấu thời gian / Ngày thực thi | `2024-03-15 09:15:00` |
@@ -438,7 +438,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`net_vol`** | `int64 / float64` | Lượng giao dịch / Cổ phiếu | `154300` |
 | **`net_val`** | `object / float64` | Thuộc tính dữ liệu | `...` |
 
-### `market.equity.futures_summary`
+### `Market().equity("SYMBOL").futures_summary`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`symbol`** | `object (str)` | Mã định danh chứng khoán / Chỉ số | `FPT` |
@@ -454,7 +454,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`foreign_buy_volume`** | `int64 / float64` | Lượng giao dịch / Cổ phiếu | `154300` |
 | **`foreign_sell_volume`** | `int64 / float64` | Lượng giao dịch / Cổ phiếu | `154300` |
 
-### `market.equity.index_summary`
+### `Market().equity("SYMBOL").index_summary`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`symbol`** | `object (str)` | Mã định danh chứng khoán / Chỉ số | `FPT` |
@@ -476,7 +476,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`put_through_value`** | `float64` | Mức giá / Giá trị tài sản (VND) | `85500.0` |
 | **`previous_close`** | `float64` | Mức giá / Giá trị tài sản (VND) | `85500.0` |
 
-### `market.equity.odd_lot`
+### `Market().equity("SYMBOL").odd_lot`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`symbol`** | `object (str)` | Mã định danh chứng khoán / Chỉ số | `FPT` |
@@ -512,7 +512,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`foreign_buy_volume`** | `int64 / float64` | Lượng giao dịch / Cổ phiếu | `154300` |
 | **`foreign_sell_volume`** | `int64 / float64` | Lượng giao dịch / Cổ phiếu | `154300` |
 
-### `market.equity.ohlcv`
+### `Market().equity("SYMBOL").ohlcv`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`time`** | `datetime64[ns]` | Dấu thời gian / Ngày thực thi | `2024-03-15 09:15:00` |
@@ -524,7 +524,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`value`** | `float64` | Mức giá / Giá trị tài sản (VND) | `85500.0` |
 | **`ticker`** | `object (str)` | Mã định danh chứng khoán / Chỉ số | `FPT` |
 
-### `market.equity.order_book`
+### `Market().equity("SYMBOL").order_book`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`bid_price_1`** | `float64` | Mức giá / Giá trị tài sản (VND) | `85500.0` |
@@ -544,7 +544,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | `ask_vol_3` | `int64 / float64` | Lượng giao dịch / Cổ phiếu | `154300` |
 | `..._4 to 10` | `...` | *(Tương tự cho các cấp độ tiếp theo)* | `...` |
 
-### `market.equity.proprietary_flow`
+### `Market().equity("SYMBOL").proprietary_flow`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`trading_date`** | `datetime64[ns]` | Dấu thời gian / Ngày thực thi | `2024-03-15 09:15:00` |
@@ -555,7 +555,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`net_vol`** | `int64 / float64` | Lượng giao dịch / Cổ phiếu | `154300` |
 | **`net_val`** | `object / float64` | Thuộc tính dữ liệu | `...` |
 
-### `market.equity.quote`
+### `Market().equity("SYMBOL").quote`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`symbol`** | `object (str)` | Mã định danh chứng khoán / Chỉ số | `FPT` |
@@ -591,7 +591,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`foreign_buy_volume`** | `int64 / float64` | Lượng giao dịch / Cổ phiếu | `154300` |
 | **`foreign_sell_volume`** | `int64 / float64` | Lượng giao dịch / Cổ phiếu | `154300` |
 
-### `market.equity.summary`
+### `Market().equity("SYMBOL").summary`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`high_52w`** | `float64` | Mức giá / Giá trị tài sản (VND) | `85500.0` |
@@ -609,7 +609,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`dividend_yield`** | `float64` | Tỷ lệ / Chỉ số đánh giá | `0.15` |
 | **`foreign_ownership_pct`** | `float64` | Tỷ lệ / Chỉ số đánh giá | `0.15` |
 
-### `market.equity.trades`
+### `Market().equity("SYMBOL").trades`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`time`** | `datetime64[ns]` | Dấu thời gian / Ngày thực thi | `2024-03-15 09:15:00` |
@@ -619,7 +619,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`match_type`** | `object (str)` | Phân loại khớp lệnh | `Normal` |
 | **`id`** | `object (str)` | ID Nhận diện duy nhất | `812xcz-3` |
 
-### `market.equity.volume_profile`
+### `Market().equity("SYMBOL").volume_profile`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`price`** | `float64` | Mức giá / Giá trị tài sản (VND) | `85500.0` |
@@ -629,7 +629,7 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`total_volume`** | `int64 / float64` | Lượng giao dịch / Cổ phiếu | `154300` |
 | **`match_percent`** | `float64` | Tỷ lệ / Chỉ số đánh giá | `0.15` |
 
-### `market.equity.warrant_summary`
+### `Market().equity("SYMBOL").warrant_summary`
 | Column Name (Cột) | Dtype | Ý Nghĩa (Meaning) | Sample Value |
 |-------------------|-------|-------------------|--------------|
 | **`symbol`** | `object (str)` | Mã định danh chứng khoán / Chỉ số | `FPT` |

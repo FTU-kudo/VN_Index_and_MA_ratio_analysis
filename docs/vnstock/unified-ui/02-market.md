@@ -41,6 +41,15 @@ mkt = Market()
 | 2024-01-02 07:00:00 | 55.05 | 55.52 | 54.59 | 55.45 | 1785800 |
 | 2024-01-03 07:00:00 | 55.45 | 56.12 | 54.99 | 56.12 | 1373000 |
 
+**Ví dụ:**
+```python
+# Lấy dữ liệu nến (OHLCV) của cổ phiếu FPT
+df_fpt = mkt.equity("FPT").ohlcv(start="2024-01-01", end="2024-01-31")
+
+# Lấy bảng giá của cổ phiếu VCB
+quote_vcb = mkt.equity("VCB").quote()
+```
+
 ---
 
 ### B. Lớp `index` (Chỉ số)
