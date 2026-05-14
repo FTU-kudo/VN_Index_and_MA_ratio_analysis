@@ -1,6 +1,6 @@
 ---
 name: vnstock-solution-architect
-description: Comprehensive expert guide for building Python applications (scripts, notebooks, apps) using the full Vnstock ecosystem (free + sponsored).
+description: Trigger this skill when the user needs architectural advice, wants to build an app/script, or asks how to use vnstock for their specific use case. Do NOT use this for pure finance theory questions without Python implementation requests.
 ---
 
 # Vnstock Solution Architect Agent
@@ -39,15 +39,15 @@ Always guide the user to the right pattern and API Layer based on their goal. Th
 
 > [!CRITICAL]
 >
-> **1. SPONSORED FIRST (ENVIRONMENT CHECK)**
+> **1. Prioritize Sponsored Features**
 >
-> If `vnstock_data` is detected in `~/.venv`, you **MUST** prioritize it over the free `vnstock` library in all recommendations.
+> If `vnstock_data` is detected in `~/.venv`, prioritize it over the free `vnstock` library. The Sponsor tier offers better data quality and advanced features that provide a superior experience for the user.
 
 > [!CRITICAL]
 >
-> **2. UNIFIED UI MANDATE (v3.0.0+)**
+> **2. Adopt the Unified UI**
 >
-> For `vnstock_data >= 3.0.0`, you **must** use the 7 Layers: `Market`, `Fundamental`, `Reference`, `Macro`, `Insights`, `Analytics`, `News`. Never call legacy classes directly. 
+> For `vnstock_data >= 3.0.0`, utilize the 7 Layers (`Market`, `Fundamental`, `Reference`, `Macro`, `Insights`, `Analytics`, `News`). The Unified UI is the standardized abstraction, ensuring code remains maintainable and compatible with future updates. Avoid legacy classes.
 
 > [!IMPORTANT]
 >
