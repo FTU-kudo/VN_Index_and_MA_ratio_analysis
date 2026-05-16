@@ -1,6 +1,6 @@
 ---
 name: vnstock-migration-expert
-description: Expert skill to assist users in migrating code within the Vnstock ecosystem. Handles upgrades from the Free tier to the Sponsor tier (`vnstock_data`), and transitions to the Unified UI (v3.0.0+).
+description: Activate this skill when a user wants to upgrade from the free tier to the sponsor tier, or migrate legacy code to the Unified UI. Do NOT activate this if the error is unrelated to imports or package versions.
 ---
 
 # vnstock-migration-expert
@@ -13,7 +13,6 @@ description: Expert skill to assist users in migrating code within the Vnstock e
 | :--- | :--- | :--- |
 | "Add API Key but still community version?" | Guide `docs/vnstock/12-migration-guide.md` | Explain `vnstock` vs `vnstock_data`. Instruct to install and switch imports. |
 | "Migrate large project Free to Sponsor" | `vnstock.core.utils.upgrade.migrate_to_sponsor` | Ensure code is committed, then run the built-in AST migration Python function. |
-| "Migrate old code to vnstock.api (Free)" | `scripts/migrate.py` | Use the consolidated script to scan and suggest modular replacements. |
 | "GUI Installation Failed" | `docs/setup-and-debug/02-installation-troubleshooting.md` | Instruct to install from `requirements.txt` first. |
 | "externally-managed-environment error" | `docs/setup-and-debug/02-installation-troubleshooting.md` | Instruct to create a Virtual Environment (`.venv`). |
 | "Migrate old code to Unified UI (v3)" | `docs/vnstock-data/14-unified-ui.md` | Analyze code and map to the 7 Layers (Reference, Market, Fundamental, etc.). |
@@ -26,7 +25,6 @@ description: Expert skill to assist users in migrating code within the Vnstock e
 1. User shows logs with `Community version` despite having an active API Key or being a Sponsor.
 2. User explicitly requests to "migrate", "convert", or "upgrade" their `vnstock` code.
 3. User asks about `show_api()`, Unified UI, Market, Reference, or Fundamental layers.
-4. User is using legacy `Vnstock()` class and needs to switch to modular `vnstock.api` (Community).
 
 **DO NOT ACTIVATE WHEN:**
 1. The error is unrelated to imports or package installation (e.g., calculation logic errors).
@@ -37,16 +35,16 @@ description: Expert skill to assist users in migrating code within the Vnstock e
 ## ⚠️ CRITICAL RULES
 
 > [!CRITICAL]
-> **1. MANDATORY BACKUP BEFORE MIGRATION**
-> Never run `migrate_to_vnstock_data.py` without verifying that the user has committed their code using Git or has a backup. Do not destroy user code.
+> **1. Backup Code Before Migration**
+> Do not run automated migrations like `migrate_to_vnstock_data.py` without verifying that the user has committed their code. Automated replacements can cause irreversible loss of custom logic. Always ensure a backup exists.
 
 > [!CRITICAL]
-> **2. VIRTUAL ENVIRONMENT IS MANDATORY FOR SPONSOR TIER**
-> Before installing `vnstock_data` or using Unified UI, ALWAYS verify the user is inside a `.venv` virtual environment (`source .venv/bin/activate` or `.venv\Scripts\activate`).
+> **2. Virtual Environments for Sponsor Tier**
+> Before installing `vnstock_data`, ensure the user is inside a `.venv` virtual environment. The Sponsor tier often requires precise dependency versions that might conflict with a global environment.
 
 > [!IMPORTANT]
-> **3. DO NOT BASH-SCRIPT TEXT REPLACEMENT**
-> Avoid using `sed` or `awk` for migrations. Starting from vnstock v3.5.1, use the AST migration function shipped with the library using a Python snippet tool:
+> **3. Use AST for Reliable Migrations**
+> Avoid using regex, `sed`, or `awk` for code migrations, as they are fragile and miss context. Instead, use the built-in AST migration function shipped with the library which understands Python syntax reliably:
 > `from vnstock.core.utils.upgrade import migrate_to_sponsor; migrate_to_sponsor(".")`
 
 ---
@@ -55,10 +53,9 @@ description: Expert skill to assist users in migrating code within the Vnstock e
 
 | ❌ AVOID | ✅ PREFER |
 | :--- | :--- |
-| Running `sed -i` across files. | Using the provided `migrate.py` script. |
+| Running `sed -i` across files. | Using the provided `migrate_to_vnstock_data.py` script. |
 | Long explanations about API Keys not working. | Telling them directly: "Change the import package name from `vnstock` to `vnstock_data`". |
 | Calling old legacy classes (e.g., `LegacyMacro`) in v3.0. | Mapping strictly to Unified UI (`Macro().economy().gdp()`). |
-| Using the deprecated `Vnstock()` class. | Importing modular adapters from `vnstock.api`. |
 
 ---
 
@@ -88,37 +85,6 @@ Follow these exact steps when requested to migrate code.
 ### Step 4: Verification
 - Run a basic script (e.g., `Company.overview()`) to verify imports work and API Key is valid.
 - Announce migration completion.
-
----
-
-## 🏗️ COMMUNITY MIGRATION (LEGACY TO VNSTOCK.API)
-
-Từ sau ngày 31/08/2025, lớp `Vnstock` trong `vnstock.common.client` sẽ bị ngừng hỗ trợ. Người dùng được khuyến khích chuyển sang sử dụng các lớp chuyên biệt trong `vnstock.api`.
-
-### So sánh cách dùng cũ và mới
-
-| Tính năng | Cách dùng cũ (Vnstock) | Cách dùng mới (vnstock.api) |
-| :--- | :--- | :--- |
-| **Giá lịch sử** | `Vnstock().stock(symbol).quote.history(...)` | `Quote(symbol, source).history(...)` |
-| **Hồ sơ công ty** | `Vnstock().stock(symbol).company.profile()` | `Company(symbol, source).profile()` |
-| **Tài chính** | `Vnstock().stock(symbol).finance.ratio()` | `Financial(symbol, source).ratio()` |
-| **Niêm yết** | `Vnstock().stock(symbol).listing.all_symbols()` | `Listing(source).all_symbols()` |
-
-### Ví dụ chuyển đổi
-
-**Cũ (Legacy):**
-```python
-from vnstock import Vnstock
-stock = Vnstock()
-df = stock.stock('ACB').quote.history(start='2024-01-01', end='2024-12-31')
-```
-
-**Mới (Modular):**
-```python
-from vnstock import Quote
-q = Quote(symbol='ACB', source='VCI')
-df = q.history(start='2024-01-01', end='2024-12-31')
-```
 
 ---
 

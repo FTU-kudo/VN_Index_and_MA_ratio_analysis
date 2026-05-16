@@ -1,6 +1,6 @@
 ---
 name: vnstock-env-setup
-description: Comprehensive environment diagnostic, setup, and agent guide installation for the Vnstock ecosystem (Free or Sponsored). Validates OS, Python, venv, and performs migrations. Fully English documented.
+description: Trigger this skill whenever a user reports installation errors, pip issues, or asks to set up the environment for the Vnstock ecosystem. Do NOT use this skill for general coding or data analysis questions.
 ---
 
 # Vnstock Environment Setup & Diagnostics
@@ -37,16 +37,16 @@ description: Comprehensive environment diagnostic, setup, and agent guide instal
 ## ⚠️ CRITICAL RULES
 
 > [!CRITICAL]
-> **1. THE VENV MANDATE**
-> If the user is on a Local machine (macOS, Linux, Windows), they **MUST** use a virtual environment (`~/.venv`). NEVER use `--break-system-packages` globally.
+> **1. The Virtual Environment Mandate**
+> If the user is on a Local machine (macOS, Linux, Windows), always set up a virtual environment (e.g., `~/.venv`). Installing packages globally using `--break-system-packages` can lead to dependency conflicts and break their system Python installation.
 
 > [!CRITICAL]
-> **2. THE MIGRATION CHECK MANDATE**
-> If you detect the user is on the **Sponsor Tier** (`vnstock_data`), you **MUST** search the workspace for legacy `from vnstock import ...` code. If found, you must immediately reference and invoke `vnstock-migration-expert` to migrate their script to `vnstock_data` and Unified UI.
+> **2. Sponsor Tier Migration Checks**
+> If you detect the user is on the **Sponsor Tier** (`vnstock_data`), actively search the workspace for legacy `from vnstock import ...` code. Legacy code will fail or lack advanced features. If found, invoke `vnstock-migration-expert` to migrate their scripts to the Unified UI.
 
 > [!IMPORTANT]
-> **3. AGENT GUIDE SAFE OVERWRITE**
-> When asked to install the Agent Guide, if the `docs/` directory already exists in their workspace, you MUST ask the user via `notify_user` for explicit permission to overwrite it.
+> **3. Safe Overwrites for Agent Guide**
+> When installing the Agent Guide, pause if the `docs/` directory already exists. Ask the user for explicit permission before overwriting to prevent accidental loss of any custom documentation they may have written.
 
 ---
 
