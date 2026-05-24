@@ -294,7 +294,6 @@ print(f"Số lượng: {len(potential_opportunities)}")
 print(f"Ví dụ: {list(potential_opportunities)[:5]}")
 ```
 
-
 **Lưu ý**: Chỉ VND hỗ trợ TopStock.
 
 ## Ứng Dụng

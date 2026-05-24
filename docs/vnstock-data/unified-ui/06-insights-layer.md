@@ -58,7 +58,6 @@ print(df_gainers_vn)
 |:---|:---|---:|:---|---:|---:|---:|---:|---:|
 | HID | HOSE | 4.65 | 2026-05-15 10:38 | 0.3 | 6.89655 | 7.35031e+08 | 446655 | 35.9562 |
 
-
 # ===== Top Loser (Giảm Giá) =====
 df_losers = ins.ranking().loser()
 print(df_losers)
@@ -227,7 +226,6 @@ sector_filter = {
 df_sector = ins.screener().filter(params=sector_filter)
 print(f"\nCổ phiếu thuộc nhóm ngành {sector_code}: {len(df_sector)}")
 print(df_sector[['ticker', 'exchange', 'sector_lv1']].head())
-
 
 # ===== 3. Lọc Toàn Thị Trường & Phân Tích Bằng Pandas =====
 # Lấy mọi cổ phiếu với bộ lọc mặc định rộng nhất

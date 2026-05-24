@@ -39,7 +39,6 @@ Reference()
 | `news()`         | -       | Tin tức công ty             |
 | `events()`       | -       | Sự kiện công ty             |
 
-
 #### 📝 Chi Tiết Các Phương Thức
 
 **1. Thông tin tổng quan (`info`)**

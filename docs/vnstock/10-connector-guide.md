@@ -189,10 +189,6 @@ Các nguồn sau **không được hỗ trợ** trong phiên bản hiện tại 
 
 - Để lấy dữ liệu tiền điện tử: sử dụng các thư viện chuyên dụng (ví dụ: `python-binance`)
 
-
-
-
-
 ## 🔄 Chuyển Đổi Giữa Connectors
 
 ### Ví dụ: So Sánh Dữ Liệu từ FMP và XNO

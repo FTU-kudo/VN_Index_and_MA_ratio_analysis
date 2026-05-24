@@ -2,7 +2,7 @@
 
 ## 📦 Yêu Cầu Hệ Thống
 
-- **Python**: 3.8 hoặc cao hơn (khuyến nghị 3.10+)
+- **Python**: 3.10 hoặc cao hơn (khuyến nghị 3.12+)
 - **OS**: Windows, macOS, hoặc Linux
 - **Internet**: Kết nối internet ổn định
 
@@ -65,11 +65,11 @@ VNStock hỗ trợ các cấp độ sử dụng khác nhau với giới hạn re
 
 ### Cấp Độ Sử Dụng
 
-| Cấp độ | Giới hạn | Yêu cầu | Mô tả |
-|--------|----------|---------|-------|
-| **Khách (Guest)** | 20 requests/phút | Không cần đăng ký | Sử dụng miễn phí, giới hạn thấp |
-| **Cộng đồng (Community)** | 60 requests/phút | Đăng ký miễn phí | Phù hợp cá nhân mới tìm hiểu |
-| **Tài trợ (Sponsor)** | 180-600 requests/phút | Thành viên tài trợ| Dành cho nghiên cứu chuyên sâu |
+| Cấp độ                    | Giới hạn              | Yêu cầu            | Mô tả                           |
+| ------------------------- | --------------------- | ------------------ | ------------------------------- |
+| **Khách (Guest)**         | 20 requests/phút      | Không cần đăng ký  | Sử dụng miễn phí, giới hạn thấp |
+| **Cộng đồng (Community)** | 60 requests/phút      | Đăng ký miễn phí   | Phù hợp cá nhân mới tìm hiểu    |
+| **Tài trợ (Sponsor)**     | 180-600 requests/phút | Thành viên tài trợ | Dành cho nghiên cứu chuyên sâu  |
 
 ### Đăng Ký API Key (Miễn Phí)
 

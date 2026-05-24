@@ -340,7 +340,6 @@ Chúng tôi đã chuyển các đoạn code minh hoạ này thành tập hợp c
 ✅ **Ví Dụ 4 (Tự Khai Phá Website Lạ):** Áp dụng Custom XPath trên bất kỳ website báo nào.
 👉 Xem và chạy: [`scripts/04_custom_site_parsing.py`](scripts/04_custom_site_parsing.py)
 
-
 ---
 
 ## Xử Lý Lỗi

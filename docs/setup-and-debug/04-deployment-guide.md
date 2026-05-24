@@ -36,7 +36,7 @@ Khi tạo các script cài đặt tự động (Bash/Ansible) cho VPS, hãy ép 
 ### Yêu Cầu Hệ Thống
 *   **Hệ Điều Hành**: Ubuntu 22.04 LTS hoặc mới hơn.
 *   **Python**: Phiên bản 3.10+.
-*   **Môi Trường Ảo (Virtual Environment)**: BẮT BUỘC. Không được cài đặt gói vào môi trường global của hệ thống.
+*   **Môi Trường Ảo (Virtual Environment)**: BẮT BUỘC. Không được cài đặt gói vào môi trường global của hệ thống. Mặc định khởi tạo môi trường ảo tập trung tại `~/.venv` (macOS/Linux) hoặc `$HOME\.venv` (Windows).
 
 ### Quản Lý Service (Systemd)
 Luôn ưu tiên sử dụng `systemd` cho các tiến trình chạy ngầm (ví dụ: trading bot, crawler).

@@ -24,10 +24,10 @@
 
 ### Thư Viện Cốt Lõi
 
-| Thư Viện             | Mục Đích                                                                     | Đối Tượng           | Trạng Thái   |
-| -------------------- | ---------------------------------------------------------------------------- | ------------------- | ------------ |
+| Thư Viện             | Mục Đích                                                                     | Đối Tượng           | Trạng Thái  |
+| -------------------- | ---------------------------------------------------------------------------- | ------------------- | ----------- |
 | **vnstock**          | API dữ liệu chứng khoán miễn phí (Quote, Company, Finance, Trading, Listing) | Người dùng miễn phí | ✅ Hoạt động |
-| **vnstock_data**     | Lớp dữ liệu với tính năng nâng cao (Macro, Insights, Screener)       | Người tài trợ       | ✅ Hoạt động |
+| **vnstock_data**     | Lớp dữ liệu với tính năng nâng cao (Macro, Insights, Screener, vv)           | Người tài trợ       | ✅ Hoạt động |
 | **vnstock_ta**       | Chỉ báo phân tích kỹ thuật và vẽ biểu đồ                                     | Người tài trợ       | ✅ Hoạt động |
 | **vnstock_news**     | Thu thập tin tức và phân tích cảm xúc                                        | Người tài trợ       | ✅ Hoạt động |
 | **vnstock_pipeline** | Pipeline dữ liệu và streaming cho production                                 | Người tài trợ       | ✅ Hoạt động |
@@ -36,42 +36,45 @@
 
 ## 🤖 Hướng Dẫn AI Agent
 
-Kho lưu trữ này cung cấp file hướng dẫn chuyên biệt cho các nền tảng AI khác nhau:
+Bộ tài liệu này cung cấp tệp hướng dẫn chuyên biệt cho các nền tảng AI khác nhau ngay tại thư mục gốc để giảm thiểu tình trạng context bloat khi AI Agent quét thư mục (sắp xếp theo thứ tự ưu tiên đề xuất):
 
-- **[.cursor/rules/instructions.md](.cursor/rules/instructions.md)** - Cho Cursor IDE
-- **[.agents/rules/GEMINI.md](.agents/rules/GEMINI.md)** - Cho Google Antigravity
-- **[AGENTS.md](AGENTS.md)** - Cho Windsurf IDE
-- **[CLAUDE.md](CLAUDE.md)** - Cho Claude Code
-- **[GEMINI.md](GEMINI.md)** - Cho Google Gemini CLI
+- **[AGENTS.md](AGENTS.md)** - Quy tắc chuẩn chung dùng cho **Google Antigravity IDE**, **OpenAI Codex**, **Cursor IDE**, và **Windsurf IDE**
+- **[CLAUDE.md](CLAUDE.md)** - Cho **Claude Code** (CLI tool)
 
 ---
 
-## 🚀 Cách sử dụng nhanh
+## 🚀 Cách Thiết Lập (Dành Cho AI Agent)
 
-Chạy lệnh dưới đây tại **thư mục gốc của dự án của bạn** để tải về bộ hướng dẫn và chép vào môi trường làm việc. Chọn lệnh phù hợp với hệ điều hành bạn dùng.
+Thay vì phải gõ lệnh thủ công, bạn chỉ cần copy prompt (câu lệnh) dưới đây và dán vào IDE của bạn (Google Antigravity, Claude Code, Codex, Cursor, Windsurf) để AI tự động cấu hình toàn bộ:
+
+> *"Hãy clone thư viện `https://github.com/vnstock-hq/vnstock-agent-guide.git` vào thư mục tạm. Đọc nội dung tệp `AGENTS.md` và thư mục `docs/`. Áp dụng các quy tắc này làm ngữ cảnh dự án của tôi để code với thư viện vnstock. Xóa thư mục tạm sau khi hoàn tất."*
+
+### Thiết lập thủ công
+
+Nếu bạn không muốn dùng Prompt trên, hãy mở Terminal tại **thư mục gốc của dự án** và chạy lệnh:
 
 ```bash
-# 1. Tải về bộ hướng dẫn
+# Tải về bộ hướng dẫn
 git clone https://github.com/vnstock-hq/vnstock-agent-guide.git
 
-# 2. Sao chép vào dự án của bạn (Chọn lệnh phù hợp với OS)
+# Sao chép vào dự án (macOS/Linux)
+cp -rf vnstock-agent-guide/docs vnstock-agent-guide/AGENTS.md ./
 
-# macOS / Linux:
-mv -f vnstock-agent-guide/docs vnstock-agent-guide/.agent vnstock-agent-guide/.cursor vnstock-agent-guide/.github vnstock-agent-guide/AGENTS.md vnstock-agent-guide/CLAUDE.md ./
-
-# Windows (PowerShell):
-Move-Item -Path vnstock-agent-guide/docs, vnstock-agent-guide/.agents, vnstock-agent-guide/.cursor, vnstock-agent-guide/.github, vnstock-agent-guide/AGENTS.md, vnstock-agent-guide/CLAUDE.md -Destination ./ -Force
+# Sao chép vào dự án (Windows PowerShell)
+Copy-Item -Path vnstock-agent-guide/docs, vnstock-agent-guide/AGENTS.md -Destination ./ -Recurse -Force
 ```
 
-### Bước 3: Sử Dụng Với AI Agents
+> **Ghi chú**: Hãy sử dụng `AGENTS.md` cho hầu hết các môi trường AI (Antigravity, Codex, Cursor, Windsurf), ngoại trừ Claude Code thì dùng `CLAUDE.md`. Lưu ý riêng:
 
-| AI Agent               | File Instruction                  | Đặt tại thư mục gốc | Link Tải IDE                                                                                         |
-| ---------------------- | --------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Google Antigravity** | `.agents/rules/GEMINI.md`          | ✅                  | [Tải tại đây](https://antigravity.google/)                                                           |
-| **Cursor IDE**         | `.cursor/rules/instructions.md`   | ✅                  | [Tải tại đây](https://cursor.com/download)                                                           |
-| **Windsurf IDE**       | `AGENTS.md`                       | ✅                  | [Tải tại đây](https://windsurf.com/editor)                                                           |
-| **Claude Code**        | `CLAUDE.md`                       | ✅                  | [Tải tại đây](https://claude.com/product/claude-code)                                                |
-| **VS Code + Copilot**  | `.github/copilot-instructions.md` | ✅                  | [VS Code](https://code.visualstudio.com/download) + [Github Copilot](https://github.com/features/copilot/plans) |
+### Tóm Tắt Tệp Hướng Dẫn Theo IDE
+
+| AI Agent / IDE         | Tệp Hướng Dẫn                                                                     |
+| :--------------------- | :-------------------------------------------------------------------------------- |
+| **Google Antigravity** | `AGENTS.md` (chép ở thư mục gốc, hoặc lưu ở `~/.gemini/GEMINI.md` để dùng Global) |
+| **Claude Code**        | `CLAUDE.md` (chép ở thư mục gốc)                                                  |
+| **OpenAI Codex**       | `AGENTS.md` (chép ở thư mục gốc)                                                  |
+| **Cursor IDE**         | `AGENTS.md` (chép ở thư mục gốc, có thể include nội dung vào `.cursorrules`)      |
+| **Windsurf IDE**       | `AGENTS.md` (chép ở thư mục gốc)                                                  |
 
 ### Bước 4: Demo Notebook (Colab)
 

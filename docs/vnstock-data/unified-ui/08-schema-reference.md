@@ -404,7 +404,6 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`ask_vol`**     | `float64`        | Volume khối lượng Ask      | `154300`              |
 | **`bid_vol`**     | `float64`        | Volume khối lượng Bid      | `154400`              |
 
-
 ### `market.equity.block_trades`
 | Column Name (Cột)     | Dtype             | Ý Nghĩa (Meaning)                 | Sample Value          |
 | --------------------- | ----------------- | --------------------------------- | --------------------- |
@@ -1937,4 +1936,3 @@ Tài liệu quy chuẩn Schema cho toàn bộ hệ thống Unified UI của vnst
 | **`name_en`**     | `object (str)` | Tên / Phân loại / Mô tả           | `Công ty CP FPT` |
 | **`name_local`**  | `object (str)` | Tên / Phân loại / Mô tả           | `Công ty CP FPT` |
 | **`symbol_id`**   | `object (str)` | Mã định danh chứng khoán / Chỉ số | `FPT`            |
-

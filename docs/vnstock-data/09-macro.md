@@ -300,7 +300,6 @@ if len(fdi_registered) > 0:
         print("📉 FDI đang giảm")
 ```
 
-
 ## Ứng Dụng
 
 - **Phân tích macro**: Hiểu nền kinh tế, lạm phát, tăng trưởng

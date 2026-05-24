@@ -64,9 +64,24 @@ git clone https://github.com/vnstock-hq/vnstock-agent-guide.git
 
 AI cần tuân thủ các đường dẫn tiêu chuẩn:
 
-* **Virtual Environment**:
-    - Chuẩn: `~/.venv` (Tại thư mục Home để dùng chung cho gọn) hoặc `.venv` (Tại project root).
-    - Kích hoạt: `source ~/.venv/bin/activate` (Unix) hoặc `.venv\Scripts\activate` (Win).
-* **Config Home** (`~/.vnstock/`):
-    - Nơi lưu trữ `api_key.json` và cache.
-    - Nếu gặp lỗi Authentication loop, AI nên đề xuất xoá thư mục này để reset.
+* **Virtual Environment (Môi Trường Ảo)**:
+    - **Mặc định cài đặt**: Các thư viện Vnstock mặc định sẽ được cài đặt tập trung tại:
+        - **macOS/Linux**: `~/.venv` (Thư mục Home của người dùng).
+        - **Windows**: `$HOME\.venv` (hoặc `%USERPROFILE%\.venv` - Thư mục Home của người dùng).
+    - **Ý nghĩa**: Cấu hình mặc định cài vào Home directory giúp chia sẻ môi trường ảo, cache và các credentials (license/auth_state) một cách tập trung giữa tất cả các dự án trên máy mà không phải cấu hình lại từ đầu cho từng project.
+    - **Lệnh kích hoạt (Activation)**:
+        - **macOS/Linux**:
+          ```bash
+          source ~/.venv/bin/activate
+          ```
+        - **Windows (PowerShell)**:
+          ```powershell
+          & "$HOME\.venv\Scripts\Activate.ps1"
+          ```
+        - **Windows (CMD)**:
+          ```cmd
+          %USERPROFILE%\.venv\Scripts\activate.bat
+          ```
+* **Config Home** (`~/.vnstock/` hoặc `%USERPROFILE%\.vnstock\` trên Windows):
+    - Nơi lưu trữ `api_key.json`, `auth_state.json` và các cache hệ thống.
+    - Nếu gặp lỗi Authentication loop hoặc lỗi cấp quyền không đồng bộ, AI hoặc người dùng nên đề xuất xoá thư mục này để reset lại trạng thái.

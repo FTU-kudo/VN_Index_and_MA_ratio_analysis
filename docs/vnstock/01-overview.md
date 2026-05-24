@@ -154,7 +154,6 @@ Bắt đầu từ bản v3.5.1, nếu bạn đã cài đặt gói thư viện Sp
 
 Để nâng cấp dự án sang sử dụng đầy đủ các tính năng trong bản `vnstock_data` (sponsor) và giới hạn API được mở rộng, bạn có thể thực hiện di chuyển mã thủ công hoặc qua công cụ tự động của thư viện. Xem hướng dẫn di chuyển mã chi tiết tại [Hướng Dẫn Nâng Cấp (Migration Guide)](12-migration-guide.md). Các công cụ hỗ trợ như **AI Agents** có thể tự động chạy kịch bản `migrate_to_sponsor(target_dir=".")` để thay bạn hoàn tất việc kết nối phiên bản mới một cách tự động.
 
-
 ---
 
 ## 🏗️ Kiến Trúc Tổng Thể
