@@ -55,7 +55,57 @@ Thay vì truyền `base_path` thủ công vào lớp `Exporter` như các phiên
 ### Tính năng cốt lõi:
 
 1. **Format linh hoạt**: Mặc định lưu `parquet` để tối ưu dung lượng, nhưng có thể thiết lập `format_overrides` để xuất Báo cáo tài chính ra `excel` hoặc dữ liệu sổ lệnh, thống kê ra `csv` tiện sử dụng.
-2. **Cấu trúc linh hoạt**: Chế độ `flat` cho người dùng cơ bản (tất cả các thư mục dữ liệu chính nằm cùng một thư mục cha), hoặc `nested` cho Data Engineer (phân tầng `[layer]/[domain]/[category]...`).
+2. **Cấu Trúc Linh Hoạt (Flat vs Nested Layout)**: Hệ thống cung cấp hai chế độ tổ chức thư mục linh hoạt để phù hợp với từng Use Case:
+
+   **Chế độ Flat (Mặc định)**: Dành cho người dùng cá nhân, lược bỏ các cấp thư mục thừa để truy xuất file dễ nhất.
+   ```text
+   ├── stock_db/
+   │   ├── ohlcv/                          # Dữ liệu nến ngày
+   │   │   ├── ACB.parquet
+   │   ├── trades/                         # Dữ liệu khớp lệnh (Tick)
+   │   │   ├── ACB.parquet
+   │   ├── session_stats/                  # Thống kê giao dịch
+   │   │   ├── foreign_flow/
+   │   │   │   └── ACB.parquet
+   │   ├── financial/                      # Dữ liệu BCTC
+   │   │   ├── ACB_balance_sheet.parquet
+   │   ├── news/                           # Dữ liệu tin tức
+   │   │   ├── cafef.parquet
+   │   ├── events/                         # Dữ liệu sự kiện
+   │   │   ├── calendar_events.parquet
+   │   ├── reference/                      # Dữ liệu cấu trúc/Tham chiếu
+   │   │   ├── list/                       
+   │   │   │   └── equity_by_exchange.parquet
+   │   │   ├── company/                    
+   │   │   │   ├── info/
+   │   │   │   │   └── ACB.parquet
+   ```
+
+   **Chế độ Nested**: Lý tưởng cho Enterprise Data Lake, tổ chức chặt chẽ theo lớp metadata (`[Base]/[Layer]/[Domain]/[Category]/[Interval]/[Instrument]/[Date]`). Tích hợp sẵn **Smart Defaults** để tối ưu cấu trúc (vd: `session_stats` tự bỏ cấp interval, `trades` ép kiểu `tick`).
+   ```text
+   ├── stock_db/
+   │   ├── processed/                      # DataLayer
+   │   │   ├── market/                     # DataDomain
+   │   │   │   ├── ohlcv/                  # Category
+   │   │   │   │   ├── 1D/                 # Interval: Khung thời gian (Ngày)
+   │   │   │   │   │   ├── equity/         # Instrument: Loại tài sản
+   │   │   │   │   │   │   └── ACB.parquet
+   │   │   │   ├── session_stats/          # Category (Bỏ qua Interval vì mặc định là EOD)
+   │   │   │   │   ├── foreign_flow/
+   │   │   │   │   │   ├── equity/
+   │   │   │   │   │   │   └── ACB.parquet
+   │   │   │   ├── trades/                 # Category
+   │   │   │   │   ├── tick/               # Interval: Dữ liệu Tick
+   │   │   │   │   │   ├── equity/
+   │   │   │   │   │   │   ├── 2026-06-20/ # Date: Phân mảnh theo ngày (Partitioning)
+   │   │   │   │   │   │   │   └── ACB.parquet
+   │   │   ├── fundamental/                # DataDomain
+   │   │   │   ├── balance_sheet/          
+   │   │   │   │   ├── 1Y/                 # Interval: Khung năm
+   │   │   │   │   │   ├── equity/         
+   │   │   │   │   │   │   └── ACB.parquet
+   ```
+
 3. **Metadata Catalog**: Khi dữ liệu được tải xong, `MetadataManager` âm thầm cập nhật thông tin độ lớn, độ dải ngày vào `_metadata/catalog/`.
 
 ---
