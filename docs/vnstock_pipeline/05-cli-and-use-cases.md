@@ -104,15 +104,22 @@ Lệnh này đặc biệt hữu dụng khi lấy dữ liệu lịch sử rất d
 python -m vnstock_pipeline.cli run ohlcv --tickers ACB,VCB --sources VCI,KBS,VND
 ```
 
-**Cập nhật giá cuối ngày (Daily Sync):**
+**Cập nhật dữ liệu hàng loạt theo Sàn (Exchange) hoặc Nhóm (Group):**
+Hệ thống hỗ trợ lấy toàn bộ cổ phiếu trên một sàn (`HOSE`, `HNX`, `UPCOM`) hoặc các rổ chỉ số (`VN30`, `VN100`) tự động thông qua cờ `--group`.
 
 ```bash
-# Lấy OHLCV cho rổ thanh khoản vừa quét ở trên
+# Lấy toàn bộ OHLCV của HOSE hằng ngày
+python -m vnstock_pipeline.cli run ohlcv --group HOSE --mode daily
+
+# Lấy dữ liệu cho rổ thanh khoản vừa quét ở trên
 python -m vnstock_pipeline.cli run ohlcv --watchlist liquidity_auto --mode daily
 
-# Nếu có mã bị lỗi (đứt mạng), chạy lại lệnh với cờ --retry-errors để chỉ cày lại mã xịt!
+# Nếu có mã bị lỗi (đứt mạng), chạy lại lệnh với cờ --retry-errors để chỉ cày lại mã xịt! (File log tự động được đọc từ Config Hub)
 python -m vnstock_pipeline.cli run ohlcv --retry-errors
 ```
+
+> [!TIP]
+> Để tự động hóa luồng tải dữ liệu lớn, hãy xem kịch bản chuyên nghiệp được định nghĩa sẵn trong `job_examples/sync_market_data.py`. Kịch bản này sử dụng `sys.executable` (hỗ trợ Virtual Environment tuỳ chỉnh) cùng với cơ chế bắt lỗi an toàn (catch error per task) giúp bạn tải trọn vẹn toàn bộ các nhóm dữ liệu mà không lo bị treo tiến trình (crash).
 
 ### 3. Thu Thập Báo Cáo Tài Chính Hàng Quý
 

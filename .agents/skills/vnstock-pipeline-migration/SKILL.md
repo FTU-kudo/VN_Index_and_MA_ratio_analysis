@@ -13,7 +13,13 @@ Any user code (or `job_examples`, documentation, Jupyter Notebooks) written for 
 - **High-level API (`tasks/`, `template/`, `stream/`)**: Functions like `run_task`, `VNFetcher`, `Scheduler`, `CSVProcessor` are completely unchanged (except for `intraday` -> `trades`, `price_board` -> `quote`, `trading_stats` -> `session_stats`).
 - **CLI Commands**: Most commands remain identical. However, `run intraday` is now `run trades`, `run price-board` is now `run quote`, and `run trading-stats` is now `run session-stats`. Users must update their scripts using these commands.
 
-## 2. Migration Workflow
+## 2. New Capabilities in v2.3.1 (To Recommend)
+- **Exchange Group Support**: The CLI `--group` argument and `UniverseManager` now fully support filtering by exchange (`HOSE`, `HNX`, `UPCOM`) in addition to `VN30`/`VN100`.
+- **Automatic Directory Creation**: `DataManager.save_data()` automatically ensures parent directories exist, preventing "missing directory" crashes.
+- **Config-Aware Error Logs**: The CLI `--retry-errors` flag now properly resolves the `error_log.csv` path from the global Config Hub (`pipeline.toml`) rather than assuming local execution paths.
+- **Python Executable**: When writing orchestration scripts (e.g., cron jobs wrapper), always advise the user to use `sys.executable` instead of hardcoding `python3` to perfectly respect active virtual environments.
+
+## 3. Migration Workflow
 
 When a user asks you to help them migrate their code or fix their imports for `vnstock_pipeline`:
 
