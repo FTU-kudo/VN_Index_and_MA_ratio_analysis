@@ -19,7 +19,7 @@ Any user code (or `job_examples`, documentation, Jupyter Notebooks) written for 
 - **Config-Aware Error Logs**: The CLI `--retry-errors` flag now properly resolves the `error_log.csv` path from the global Config Hub (`pipeline.toml`) rather than assuming local execution paths.
 - **Python Executable**: When writing orchestration scripts (e.g., cron jobs wrapper), always advise the user to use `sys.executable` instead of hardcoding `python3` to perfectly respect active virtual environments.
 
-## 3. Migration Workflow
+## 3. Code & Import Migration Workflow
 
 When a user asks you to help them migrate their code or fix their imports for `vnstock_pipeline`:
 
@@ -31,7 +31,25 @@ When a user asks you to help them migrate their code or fix their imports for `v
    - Alternatively, use `multi_replace_file_content` if they only want to migrate a single file.
 5. **Explain the Changes**: Inform the user about what changed. Use "Theory of Mind" to explain *why* the changes were made (e.g., "The old `core/exporter.py` was a 750-line monolith, so it was split into `core/exporters/` for better maintainability").
 
-## 3. Strict Constraints
+## 4. Data & Storage Migration Workflow
+
+Legacy `vnstock_pipeline` (pre-2.3.0) relied on hardcoded `base_path` (e.g., `./data`) in user scripts. The new version uses a centralized **Config Hub (`pipeline.toml`)** and `StorageConfig` singleton.
+
+When a user wants to migrate their existing database or update their data-reading programs:
+1. **Migrate Legacy Data Files**: Instruct the user to run the automated CLI migration tool to move their old data folder into the new centralized storage (with automatic schema alignment):
+   `python -m vnstock_pipeline.cli storage migrate-legacy --source <path_to_old_data>`
+2. **Update User Scripts**: If they have custom scripts reading parquet/csv files, replace hardcoded paths (`./data/ohlcv/ACB.parquet`) with dynamic paths fetched from config:
+   ```python
+   from vnstock_pipeline.core.storage.config import StorageConfig
+   config = StorageConfig.load()
+   base_path = config.resolve_base_path()
+   file_path = base_path / "ohlcv" / "ACB.parquet"
+   ```
+3. **Recommend CLI Queries**: Tell the user they can now directly query/inspect files without writing pandas scripts via:
+   `python -m vnstock_pipeline.cli inspect <file_path>`
+   `python -m vnstock_pipeline.cli query <file_path> "close > 50"`
+
+## 5. Strict Constraints
 
 - Do NOT attempt to migrate code related to `vnstock_data` or `vnstock` unless the user explicitly provides rules for those libraries. Focus strictly on `vnstock_pipeline`.
 - Do NOT use `sed` in bash commands for mass replacement. Always use a python script via `run_command` or the `multi_replace_file_content` tool.
