@@ -67,4 +67,5 @@ python analysis.py     # chạy full: build + gửi email
 
 ## 📈 Biểu đồ minh họa
 
-<img width="1486" height="1004" alt="image" src="https://github.com/user-attachments/assets/22d20453-038f-471a-acab-e29fc0c4f947" />
+<img width="1466" height="987" alt="image" src="https://github.com/user-attachments/assets/e7dd0106-7bf3-448f-b43f-bc97cddeef26" />
+
