@@ -1,0 +1,4 @@
+pandas
+vnstock
+plotly
+python-dotenv
