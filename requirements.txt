@@ -2,3 +2,4 @@ pandas
 vnstock
 plotly
 python-dotenv
+kaleido

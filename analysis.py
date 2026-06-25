@@ -27,6 +27,11 @@ if vnstock_api_key and change_api_key:
         print(f"Lỗi khi thiết lập API key: {e}")
 from plotly.subplots import make_subplots
 import math
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from datetime import datetime
 
 def get_hose_symbols():
     print("Bước 1: Lấy danh sách cổ phiếu HOSE...")
@@ -151,8 +156,9 @@ def get_vnindex(start_date, end_date):
         print(f"Lỗi khi lấy dữ liệu VNINDEX: {e}")
         return pd.DataFrame()
 
-def plot_market_breadth(daily_stats, vnindex_df, ma_lines, title, output_file, plot_start_date="2021-06-25"):
-    print(f"Vẽ biểu đồ và lưu ra file HTML: {output_file}...")
+def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file, plot_start_date="2021-06-25"):
+    title = f"Tương quan giữa chỉ số VN-Index và Tỷ lệ phần trăm sổ phiếu có thị giá > các đường {ma_label}"
+    print(f"Vẽ biểu đồ và lưu ra file HTML/PDF: {output_file}...")
     # Kết hợp dữ liệu
     df = pd.merge(vnindex_df, daily_stats, on='time', how='inner')
     
@@ -216,8 +222,61 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, title, output_file, p
     fig.update_yaxes(title_text="VN-Index (điểm)", secondary_y=False, showgrid=False)
     fig.update_yaxes(title_text="Tỷ lệ (%)", secondary_y=True, range=[0, 100], ticksuffix="%", showgrid=True, gridcolor="gray", gridwidth=0.5, griddash="dot")
 
+    # Thêm Annotation
+    current_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    credit_text = "© Bản quyền thuộc về FTU-Kudo"
+    
+    fig.add_annotation(
+        text=f"{credit_text} | Ngày cập nhật: {current_time_str}",
+        xref="paper", yref="paper",
+        x=1.0, y=-0.15,
+        showarrow=False,
+        font=dict(size=12, color="gray"),
+        xanchor="right", yanchor="top"
+    )
+
     fig.write_html(output_file)
-    print(f"Đã lưu biểu đồ thành công vào: {output_file}")
+    pdf_file = output_file.replace('.html', '.pdf')
+    try:
+        fig.write_image(pdf_file, format="pdf", width=1200, height=800, engine="kaleido")
+    except Exception as e:
+        print(f"Lỗi khi lưu PDF (có thể do thiếu kaleido): {e}")
+        
+    print(f"Đã lưu biểu đồ thành công vào: {output_file} và {pdf_file}")
+
+def send_email_with_pdfs(pdf_files):
+    sender = os.getenv("GMAIL_USER")
+    password = os.getenv("GMAIL_APP_PASSWORD")
+    receiver = os.getenv("GMAIL_RECEIVER")
+    
+    if not sender or not password or not receiver:
+        print("Không tìm thấy cấu hình Gmail trong biến môi trường. Bỏ qua gửi email.")
+        return
+        
+    print(f"Đang gửi email đính kèm biểu đồ tới {receiver}...")
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = sender
+        msg['To'] = receiver
+        msg['Subject'] = "Báo cáo phân tích VN-Index và MA Ratio hàng tuần"
+        
+        body = "Chào bạn,\n\nĐây là báo cáo phân tích tương quan giữa VN-Index và Tỷ lệ mã vượt các đường MA.\nVui lòng xem các file PDF đính kèm.\n\nTrân trọng,\nHệ thống tự động."
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        for file in pdf_files:
+            if os.path.exists(file):
+                with open(file, "rb") as f:
+                    part = MIMEApplication(f.read(), Name=os.path.basename(file))
+                part['Content-Disposition'] = f'attachment; filename="{os.path.basename(file)}"'
+                msg.attach(part)
+                
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.login(sender, password)
+        server.send_message(msg)
+        server.quit()
+        print("Đã gửi email thành công!")
+    except Exception as e:
+        print(f"Lỗi khi gửi email: {e}")
 
 if __name__ == "__main__":
     fetch_start_date = "2020-06-25" # Lấy dữ liệu sớm hơn 1 năm để tính được MA200 từ 2021-06-25
@@ -240,10 +299,19 @@ if __name__ == "__main__":
             
             if not vnindex.empty:
                 # Vẽ biểu đồ
-                print("Bước 5: Vẽ biểu đồ và lưu ra file HTML...")
-                plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20', 'pct_MA50', 'pct_MA200'], "Phân bố thị trường (Tất cả MA)", "market_breadth_chart.html", plot_start_date=plot_start_date)
-                plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20'], "Phân bố thị trường (MA10 & MA20)", "market_breadth_chart_ma10_ma20.html", plot_start_date=plot_start_date)
-                plot_market_breadth(stats, vnindex, ['pct_MA50', 'pct_MA200'], "Phân bố thị trường (MA50 & MA200)", "market_breadth_chart_ma50_ma200.html", plot_start_date=plot_start_date)
+                print("Bước 5: Vẽ biểu đồ và lưu ra file HTML/PDF...")
+                plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20', 'pct_MA50', 'pct_MA200'], "Tất cả MA", "market_breadth_chart.html", plot_start_date=plot_start_date)
+                plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20'], "MA10 và MA20", "market_breadth_chart_ma10_ma20.html", plot_start_date=plot_start_date)
+                plot_market_breadth(stats, vnindex, ['pct_MA50', 'pct_MA200'], "MA50 và MA200", "market_breadth_chart_ma50_ma200.html", plot_start_date=plot_start_date)
+                
+                # Gửi email
+                pdf_files = [
+                    "market_breadth_chart.pdf",
+                    "market_breadth_chart_ma10_ma20.pdf",
+                    "market_breadth_chart_ma50_ma200.pdf"
+                ]
+                send_email_with_pdfs(pdf_files)
+                
                 print("Hoàn thành tất cả các bước!")
             else:
                 print("Không có dữ liệu VNINDEX để vẽ biểu đồ.")
