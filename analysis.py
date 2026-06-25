@@ -214,8 +214,8 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
         ),
         xaxis_title="Thời gian",
         hovermode="x unified",
-        template="plotly_dark",
-        margin=dict(l=50, r=50, t=80, b=50)
+        template="plotly_white",
+        margin=dict(l=50, r=50, t=80, b=100)
     )
 
     # Tùy chỉnh các trục
@@ -229,7 +229,7 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
     fig.add_annotation(
         text=f"{credit_text} | Ngày cập nhật: {current_time_str}",
         xref="paper", yref="paper",
-        x=1.0, y=-0.15,
+        x=1.0, y=-0.28,
         showarrow=False,
         font=dict(size=12, color="gray"),
         xanchor="right", yanchor="top"
