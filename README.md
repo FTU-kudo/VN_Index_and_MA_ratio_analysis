@@ -6,7 +6,7 @@
 
 Project theo dõi **"market breadth"** (độ rộng thị trường) của HOSE:
 
-1. Lấy dữ liệu giá lịch sử của toàn bộ ~700+ mã cổ phiếu niêm yết trên HOSE qua [vnstock](https://github.com/thinh-vu/vnstock)
+1. Lấy dữ liệu giá lịch sử của toàn bộ ~400+ mã cổ phiếu niêm yết trên HOSE qua [vnstock](https://github.com/thinh-vu/vnstock)
 2. Tính các đường MA10, MA20, MA50, MA200 cho từng mã
 3. Tính tỷ lệ % số mã đang giao dịch **trên** mỗi đường MA tại từng thời điểm
 4. Vẽ biểu đồ tương quan giữa VN-Index và các tỷ lệ này (Plotly, xuất HTML tương tác + PDF)
