@@ -157,7 +157,7 @@ def get_vnindex(start_date, end_date):
         return pd.DataFrame()
 
 def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file, plot_start_date="2021-06-25"):
-    title = f"Tương quan giữa chỉ số VN-Index và Tỷ lệ phần trăm cổ phiếu có thị giá > các đường {ma_label}"
+    title = f"VN-Index và Tỷ lệ cổ phiếu vượt {ma_label}"
     print(f"Vẽ biểu đồ và lưu ra file HTML/PDF: {output_file}...")
     # Kết hợp dữ liệu
     df = pd.merge(vnindex_df, daily_stats, on='time', how='inner')
@@ -204,7 +204,8 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
     # Tùy chỉnh Layout
     fig.update_layout(
         title=title,
-        title_font_size=20,
+        title_font_size=24,
+        font=dict(family="Inter, Roboto, Arial, sans-serif"),
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -300,7 +301,7 @@ if __name__ == "__main__":
             if not vnindex.empty:
                 # Vẽ biểu đồ
                 print("Bước 5: Vẽ biểu đồ và lưu ra file HTML/PDF...")
-                plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20', 'pct_MA50', 'pct_MA200'], "MA10, MA20, MA50, MA200", "market_breadth_chart.html", plot_start_date=plot_start_date)
+                plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20', 'pct_MA50', 'pct_MA200'], "các đường MA", "market_breadth_chart.html", plot_start_date=plot_start_date)
                 plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20'], "MA10 và MA20", "market_breadth_chart_ma10_ma20.html", plot_start_date=plot_start_date)
                 plot_market_breadth(stats, vnindex, ['pct_MA50', 'pct_MA200'], "MA50 và MA200", "market_breadth_chart_ma50_ma200.html", plot_start_date=plot_start_date)
                 
