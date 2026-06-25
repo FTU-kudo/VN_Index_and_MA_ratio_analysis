@@ -240,7 +240,11 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
     fig.update_yaxes(title_text="Tỷ lệ (%)", secondary_y=True, range=[0, 100], ticksuffix="%", showgrid=True, gridcolor="gray", gridwidth=0.5, griddash="dot")
 
     # Thêm Annotation
-    current_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    from datetime import datetime
+    from zoneinfo import ZoneInfo 
+
+    # Chủ động lấy giờ theo múi giờ Việt Nam
+    current_time_str = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).strftime("%Y-%m-%d %H:%M:%S")
     credit_text = "© Bản quyền thuộc về FTU-Kudo"
     
     fig.add_annotation(
