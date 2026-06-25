@@ -38,16 +38,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Restore cached OHLC data (tránh tải lại toàn bộ 6 năm mỗi lần)
+        uses: actions/cache@v4
+        with:
+          path: hose_6years_data.csv
+          key: hose-data-${{ github.run_id }}
+          restore-keys: |
+            hose-data-
+
       - name: Build report (tải dữ liệu + tính toán + vẽ biểu đồ)
         env:
           VNSTOCK_API_KEY: ${{ secrets.VNSTOCK_API_KEY }}
         run: python analysis.py --build
 
-      - name: Commit and push generated files
+      - name: Commit and push chart outputs
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add *.html *.csv *.pdf
+          git add *.html *.pdf
           git commit -m "Auto-generated analysis report [skip ci]" || echo "No changes to commit"
           git push
 
