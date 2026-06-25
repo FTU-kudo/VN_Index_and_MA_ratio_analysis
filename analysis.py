@@ -261,7 +261,7 @@ def send_email_with_pdfs(pdf_files):
         msg['To'] = receiver
         msg['Subject'] = "Báo cáo phân tích Tương quan giữa VN-Index và Tỷ lệ mã vượt các đường MA (MA10, MA20, MA50, MA200) hàng tuần"
         
-        body = "Xin chào Quý khách,\n\nĐây là báo cáo phân tích tương quan giữa VN-Index và Tỷ lệ mã vượt các đường MA.\nXin Quý khách xem các file PDF đính kèm.\n\nTrân trọng,\nFTU-Kudo"
+        body = "Xin chào Quý khách,\n\nĐây là báo cáo phân tích tương quan giữa VN-Index và Tỷ lệ mã vượt các đường MA.\nXin Quý khách vui lòng xem các file PDF đính kèm.\n\nTrân trọng,\nFTU-Kudo"
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
         
         for file in pdf_files:
