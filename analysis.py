@@ -2,6 +2,7 @@ import pandas as pd
 import time
 import os
 import sys
+import argparse
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 from vnstock import Quote, Listing
@@ -55,16 +56,22 @@ def get_hose_symbols():
 
 def get_historical_data(symbols, start_date, end_date):
     csv_file = "hose_6years_data.csv"
+    cached_df = None
+    fetch_start = start_date
+
     if os.path.exists(csv_file):
-        print(f"File {csv_file} đã tồn tại. Đang tải dữ liệu từ file...")
         try:
-            df_csv = pd.read_csv(csv_file)
-            df_csv['time'] = pd.to_datetime(df_csv['time']).dt.date
-            return df_csv
+            cached_df = pd.read_csv(csv_file)
+            cached_df['time'] = pd.to_datetime(cached_df['time']).dt.date
+            last_date = cached_df['time'].max()
+            # Lùi lại 7 ngày để bù các phiên nghỉ/giá điều chỉnh, chỉ tải phần dữ liệu mới
+            fetch_start = (pd.to_datetime(last_date) - pd.Timedelta(days=7)).strftime("%Y-%m-%d")
+            print(f"Đã có cache đến {last_date}. Chỉ tải bổ sung từ {fetch_start}...")
         except Exception as e:
-            print("Lỗi khi đọc file CSV:", e)
-    
-    print(f"Bước 2: Tải dữ liệu OHLC 6 năm từ {start_date} đến {end_date}...")
+            print("Lỗi khi đọc file CSV cache, sẽ tải lại toàn bộ:", e)
+            cached_df = None
+
+    print(f"Bước 2: Tải dữ liệu OHLC từ {fetch_start} đến {end_date}...")
     if vnstock_api_key:
         print(f"Lưu ý: Đã kích hoạt API Key. Tốc độ tải: ~60 requests/minute (sẽ mất khoảng 7 phút).")
     else:
@@ -75,7 +82,7 @@ def get_historical_data(symbols, start_date, end_date):
     for i, symbol in enumerate(symbols):
         try:
             q = Quote(symbol=symbol)
-            df = q.history(start=start_date, end=end_date, interval="1D")
+            df = q.history(start=fetch_start, end=end_date, interval="1D")
             
             if df is not None and not df.empty:
                 df['symbol'] = symbol
@@ -95,13 +102,22 @@ def get_historical_data(symbols, start_date, end_date):
             time.sleep(5) # Nghỉ dài hơn nếu gặp lỗi
             
     if not all_data:
-        print("Không tải được dữ liệu nào.")
-        return pd.DataFrame()
+        print("Không tải được dữ liệu mới.")
+        return cached_df if cached_df is not None else pd.DataFrame()
         
-    full_df = pd.concat(all_data, ignore_index=True)
-    full_df['time'] = pd.to_datetime(full_df['time']).dt.date
+    new_df = pd.concat(all_data, ignore_index=True)
+    new_df['time'] = pd.to_datetime(new_df['time']).dt.date
+
+    if cached_df is not None:
+        full_df = pd.concat([cached_df, new_df], ignore_index=True)
+    else:
+        full_df = new_df
+
+    # Loại bỏ trùng lặp (giữ dữ liệu mới nhất cho mỗi symbol+ngày), sắp xếp lại
+    full_df = full_df.drop_duplicates(subset=['symbol', 'time'], keep='last')
+    full_df = full_df.sort_values(by=['symbol', 'time']).reset_index(drop=True)
     
-    print(f"Lưu dữ liệu ra file {csv_file}...")
+    print(f"Lưu dữ liệu ra file {csv_file} (tổng {len(full_df)} dòng)...")
     full_df.to_csv(csv_file, index=False)
     return full_df
 
@@ -280,43 +296,56 @@ def send_email_with_pdfs(pdf_files):
         print(f"Lỗi khi gửi email: {e}")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="VN-Index & MA Ratio Analysis Pipeline")
+    parser.add_argument("--build", action="store_true", help="Chỉ tải dữ liệu, tính toán & vẽ biểu đồ")
+    parser.add_argument("--send-email", action="store_true", help="Chỉ gửi email với các PDF đã có sẵn")
+    args = parser.parse_args()
+
+    # Không truyền cờ nào -> chạy full pipeline (tiện cho test ở local)
+    no_flag = not (args.build or args.send_email)
+    run_build = args.build or no_flag
+    run_send = args.send_email or no_flag
+
     fetch_start_date = "2020-06-25" # Lấy dữ liệu sớm hơn 1 năm để tính được MA200 từ 2021-06-25
     plot_start_date = "2021-06-25"
-    end_date = "2026-06-25"
-    
-    # 1. Lấy danh sách mã
-    symbols = get_hose_symbols()
-    
-    if symbols:
-        # 2. Lấy dữ liệu OHLC
-        df = get_historical_data(symbols, fetch_start_date, end_date)
-        
-        if not df.empty:
-            # 3 & 4. Xử lý dữ liệu
-            stats = process_data(df)
-            
-            # 5. Lấy VNINDEX
-            vnindex = get_vnindex(fetch_start_date, end_date)
-            
-            if not vnindex.empty:
-                # Vẽ biểu đồ
-                print("Bước 5: Vẽ biểu đồ và lưu ra file HTML/PDF...")
-                plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20', 'pct_MA50', 'pct_MA200'], "các đường MA (MA10, MA20, MA50, MA200)", "market_breadth_chart.html", plot_start_date=plot_start_date)
-                plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20'], "MA10 và MA20", "market_breadth_chart_ma10_ma20.html", plot_start_date=plot_start_date)
-                plot_market_breadth(stats, vnindex, ['pct_MA50', 'pct_MA200'], "MA50 và MA200", "market_breadth_chart_ma50_ma200.html", plot_start_date=plot_start_date)
-                
-                # Gửi email
-                pdf_files = [
-                    "market_breadth_chart.pdf",
-                    "market_breadth_chart_ma10_ma20.pdf",
-                    "market_breadth_chart_ma50_ma200.pdf"
-                ]
-                send_email_with_pdfs(pdf_files)
-                
-                print("Hoàn thành tất cả các bước!")
+    end_date = datetime.now().strftime("%Y-%m-%d")  # Luôn lấy đến ngày chạy thực tế, không hard-code
+
+    pdf_files = [
+        "market_breadth_chart.pdf",
+        "market_breadth_chart_ma10_ma20.pdf",
+        "market_breadth_chart_ma50_ma200.pdf"
+    ]
+
+    if run_build:
+        # 1. Lấy danh sách mã
+        symbols = get_hose_symbols()
+
+        if symbols:
+            # 2. Lấy dữ liệu OHLC
+            df = get_historical_data(symbols, fetch_start_date, end_date)
+
+            if not df.empty:
+                # 3 & 4. Xử lý dữ liệu
+                stats = process_data(df)
+
+                # 5. Lấy VNINDEX
+                vnindex = get_vnindex(fetch_start_date, end_date)
+
+                if not vnindex.empty:
+                    # Vẽ biểu đồ
+                    print("Bước 5: Vẽ biểu đồ và lưu ra file HTML/PDF...")
+                    plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20', 'pct_MA50', 'pct_MA200'], "các đường MA (MA10, MA20, MA50, MA200)", "market_breadth_chart.html", plot_start_date=plot_start_date)
+                    plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20'], "MA10 và MA20", "market_breadth_chart_ma10_ma20.html", plot_start_date=plot_start_date)
+                    plot_market_breadth(stats, vnindex, ['pct_MA50', 'pct_MA200'], "MA50 và MA200", "market_breadth_chart_ma50_ma200.html", plot_start_date=plot_start_date)
+                    print("Hoàn thành bước build!")
+                else:
+                    print("Không có dữ liệu VNINDEX để vẽ biểu đồ.")
             else:
-                print("Không có dữ liệu VNINDEX để vẽ biểu đồ.")
+                print("Dữ liệu cổ phiếu trống.")
         else:
-            print("Dữ liệu cổ phiếu trống.")
-    else:
-        print("Không có danh sách cổ phiếu hợp lệ.")
+            print("Không có danh sách cổ phiếu hợp lệ.")
+
+    if run_send:
+        # Gửi email
+        send_email_with_pdfs(pdf_files)
+        print("Hoàn thành bước gửi email!")
