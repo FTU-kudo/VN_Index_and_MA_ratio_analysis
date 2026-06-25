@@ -300,7 +300,7 @@ if __name__ == "__main__":
             if not vnindex.empty:
                 # Vẽ biểu đồ
                 print("Bước 5: Vẽ biểu đồ và lưu ra file HTML/PDF...")
-                plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20', 'pct_MA50', 'pct_MA200'], "Tất cả MA", "market_breadth_chart.html", plot_start_date=plot_start_date)
+                plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20', 'pct_MA50', 'pct_MA200'], "MA10, MA20, MA50, MA200", "market_breadth_chart.html", plot_start_date=plot_start_date)
                 plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20'], "MA10 và MA20", "market_breadth_chart_ma10_ma20.html", plot_start_date=plot_start_date)
                 plot_market_breadth(stats, vnindex, ['pct_MA50', 'pct_MA200'], "MA50 và MA200", "market_breadth_chart_ma50_ma200.html", plot_start_date=plot_start_date)
                 
