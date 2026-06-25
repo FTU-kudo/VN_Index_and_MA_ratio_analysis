@@ -14,7 +14,8 @@ Project theo dõi **"market breadth"** (độ rộng thị trường) của HOSE
 
 ## 🖼️ Output mẫu
 
-*(Gợi ý: chèn screenshot `market_breadth_chart.pdf` ở đây để người xem thấy ngay kết quả)*
+<img width="1466" height="987" alt="image" src="https://github.com/user-attachments/assets/fcd8f7bc-86b2-4b63-994b-630bfb13adbd" />
+
 
 ## 🏗️ Kiến trúc
 
@@ -64,8 +65,3 @@ python analysis.py     # chạy full: build + gửi email
 ## 📄 License
 
 © FTU-Kudo
-
-## 📈 Biểu đồ minh họa
-
-<img width="1466" height="987" alt="image" src="https://github.com/user-attachments/assets/e7dd0106-7bf3-448f-b43f-bc97cddeef26" />
-
