@@ -64,3 +64,7 @@ python analysis.py     # chạy full: build + gửi email
 ## 📄 License
 
 © FTU-Kudo
+
+## 📈 Biểu đồ minh họa
+
+<img width="1486" height="1004" alt="image" src="https://github.com/user-attachments/assets/22d20453-038f-471a-acab-e29fc0c4f947" />
