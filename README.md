@@ -1,114 +1,66 @@
-# Vnstock Agent Guide
+# 📊 VN-Index & MA Ratio Analysis
 
-> 🤖 **Tài Liệu Toàn Diện & Hướng Dẫn AI Agent cho Hệ Sinh Thái Vnstock**
->
-> Hướng dẫn chính xác cho AI agents để hiểu, tham chiếu và sử dụng hệ sinh thái thư viện **vnstock** Python cho thị trường chứng khoán Việt Nam.
+> Tự động phân tích tương quan giữa VN-Index và tỷ lệ cổ phiếu vượt các đường trung bình động (MA10/20/50/200) trên sàn HOSE — cập nhật hàng tuần, gửi báo cáo PDF qua email tự động.
 
----
+## Giới thiệu
 
-## 📚 Tổng Quan
+Project theo dõi **"market breadth"** (độ rộng thị trường) của HOSE:
 
-**vnstock-agent-guide** là kho tài liệu toàn diện được thiết kế đặc biệt cho **AI Agents** (Claude, Gemini, GitHub Copilot, Cursor, Windsurf, Google Antigravity) để cung cấp hướng dẫn chính xác, cập nhật về cách sử dụng hệ sinh thái thư viện **vnstock**.
+1. Lấy dữ liệu giá lịch sử của toàn bộ ~700+ mã cổ phiếu niêm yết trên HOSE qua [vnstock](https://github.com/thinh-vu/vnstock)
+2. Tính các đường MA10, MA20, MA50, MA200 cho từng mã
+3. Tính tỷ lệ % số mã đang giao dịch **trên** mỗi đường MA tại từng thời điểm
+4. Vẽ biểu đồ tương quan giữa VN-Index và các tỷ lệ này (Plotly, xuất HTML tương tác + PDF)
+5. Tự động gửi báo cáo PDF qua email hàng tuần
 
-### 🎯 Mục Đích Chính
+## 🖼️ Output mẫu
 
-- **Hỗ Trợ AI Agent**: Trang bị cho AI assistants với ngữ cảnh hoàn chỉnh để giúp người dùng xây dựng ứng dụng phân tích và đầu tư chứng khoán viết riêng cho cộng đồng Việt Nam
-- **Tài Liệu Tham Chiếu**: Tài liệu chi tiết cho tất cả thư viện vnstock và tính năng của chúng
-- **Hướng Dẫn User Tier**: Phân biệt rõ ràng giữa khả năng của người dùng miễn phí và tài trợ
-- **Ví Dụ Sẵn Sàng**: Mẫu code cho các trường hợp sử dụng
-- **Best Practices**: Mẹo tối ưu, xử lý lỗi, và hiệu suất
+*(Gợi ý: chèn screenshot `market_breadth_chart.pdf` ở đây để người xem thấy ngay kết quả)*
 
----
+## 🏗️ Kiến trúc
 
-## 🏗️ Hệ Sinh Thái Thư Viện
-
-### Thư Viện Cốt Lõi
-
-| Thư Viện             | Mục Đích                                                                     | Đối Tượng           | Trạng Thái  |
-| -------------------- | ---------------------------------------------------------------------------- | ------------------- | ----------- |
-| **vnstock**          | API dữ liệu chứng khoán miễn phí (Quote, Company, Finance, Trading, Listing) | Người dùng miễn phí | ✅ Hoạt động |
-| **vnstock_data**     | Lớp dữ liệu với tính năng nâng cao (Macro, Insights, Screener, vv)           | Người tài trợ       | ✅ Hoạt động |
-| **vnstock_ta**       | Chỉ báo phân tích kỹ thuật và vẽ biểu đồ                                     | Người tài trợ       | ✅ Hoạt động |
-| **vnstock_news**     | Thu thập tin tức và phân tích cảm xúc                                        | Người tài trợ       | ✅ Hoạt động |
-| **vnstock_pipeline** | Pipeline dữ liệu và streaming cho production                                 | Người tài trợ       | ✅ Hoạt động |
-
----
-
-## 🤖 Hướng Dẫn AI Agent
-
-Bộ tài liệu này cung cấp tệp hướng dẫn chuyên biệt cho các nền tảng AI khác nhau ngay tại thư mục gốc để giảm thiểu tình trạng context bloat khi AI Agent quét thư mục (sắp xếp theo thứ tự ưu tiên đề xuất):
-
-- **[AGENTS.md](AGENTS.md)** - Quy tắc chuẩn chung dùng cho **Google Antigravity IDE**, **OpenAI Codex**, **Cursor IDE**, và **Windsurf IDE**
-- **[CLAUDE.md](CLAUDE.md)** - Cho **Claude Code** (CLI tool)
-
----
-
-## 🚀 Cách Thiết Lập (Dành Cho AI Agent)
-
-Thay vì phải gõ lệnh thủ công, bạn chỉ cần copy prompt (câu lệnh) dưới đây và dán vào IDE của bạn (Google Antigravity, Claude Code, Codex, Cursor, Windsurf) để AI tự động cấu hình toàn bộ:
-
-> *"Hãy clone thư viện `https://github.com/vnstock-hq/vnstock-agent-guide.git` vào thư mục tạm. Đọc nội dung tệp `AGENTS.md` và thư mục `docs/`. Áp dụng các quy tắc này làm ngữ cảnh dự án của tôi để code với thư viện vnstock. Xóa thư mục tạm sau khi hoàn tất."*
-
-### Thiết lập thủ công
-
-Nếu bạn không muốn dùng Prompt trên, hãy mở Terminal tại **thư mục gốc của dự án** và chạy lệnh:
-
-```bash
-# Tải về bộ hướng dẫn
-git clone https://github.com/vnstock-hq/vnstock-agent-guide.git
-
-# Sao chép vào dự án (macOS/Linux)
-cp -rf vnstock-agent-guide/docs vnstock-agent-guide/AGENTS.md ./
-
-# Sao chép vào dự án (Windows PowerShell)
-Copy-Item -Path vnstock-agent-guide/docs, vnstock-agent-guide/AGENTS.md -Destination ./ -Recurse -Force
+```
+vnstock API → pandas (tính MA & tỷ lệ %) → Plotly (vẽ chart HTML/PDF) → Gmail SMTP (gửi email)
+                                                      │
+                              GitHub Actions: job "build" → job "send_email"
+                                                      │
+              cron-job.org ──(POST /repos/.../dispatches)──► mỗi Chủ nhật 20:00 GMT+7
 ```
 
-> **Ghi chú**: Hãy sử dụng `AGENTS.md` cho hầu hết các môi trường AI (Antigravity, Codex, Cursor, Windsurf), ngoại trừ Claude Code thì dùng `CLAUDE.md`. Lưu ý riêng:
+Pipeline tách thành 2 bước độc lập, có thể chạy riêng hoặc nối tiếp:
 
-### Tóm Tắt Tệp Hướng Dẫn Theo IDE
+```bash
+python analysis.py --build         # tải dữ liệu, tính toán, vẽ biểu đồ
+python analysis.py --send-email    # gửi email với PDF đã build
+```
 
-| AI Agent / IDE         | Tệp Hướng Dẫn                                                                     |
-| :--------------------- | :-------------------------------------------------------------------------------- |
-| **Google Antigravity** | `AGENTS.md` (chép ở thư mục gốc, hoặc lưu ở `~/.gemini/GEMINI.md` để dùng Global) |
-| **Claude Code**        | `CLAUDE.md` (chép ở thư mục gốc)                                                  |
-| **OpenAI Codex**       | `AGENTS.md` (chép ở thư mục gốc)                                                  |
-| **Cursor IDE**         | `AGENTS.md` (chép ở thư mục gốc, có thể include nội dung vào `.cursorrules`)      |
-| **Windsurf IDE**       | `AGENTS.md` (chép ở thư mục gốc)                                                  |
+**Vì sao dùng cron-job.org** thay vì `schedule:` có sẵn của GitHub Actions? GitHub có thể delay hoặc bỏ qua scheduled job (đặc biệt với repo ít hoạt động). Dùng dịch vụ cron ngoài gọi GitHub Dispatches API (`repository_dispatch`) đảm bảo workflow được kích hoạt đúng giờ.
 
-### Bước 4: Demo Notebook (Colab)
+**Vì sao cache bằng GitHub Actions cache, không commit CSV vào git?** Dữ liệu OHLC (`hose_6years_data.csv`, ~20MB+) cần tồn tại giữa các lần chạy để chỉ tải bổ sung phần dữ liệu mới (incremental fetch) thay vì tải lại toàn bộ 6 năm mỗi tuần (~20 phút) — nhưng commit file này vào git sẽ làm phình lịch sử repo theo thời gian. `actions/cache` giải quyết được cả hai: vừa giữ tốc độ, vừa giữ repo sạch.
 
-Sử dụng notebook minh hoạ nhanh trên Google Colab:
+## ⚙️ Cài đặt & chạy local
 
-📓 **[demo/vnstock_agent_guide_quickstart.ipynb](demo/vnstock_agent_guide_quickstart.ipynb)**
+```bash
+git clone https://github.com/FTU-kudo/VN_Index_and_MA_ratio_analysis.git
+cd VN_Index_and_MA_ratio_analysis
+pip install -r requirements.txt
+cp .env.example .env   # điền VNSTOCK_API_KEY / Gmail App Password của bạn
+python analysis.py     # chạy full: build + gửi email
+```
 
-Notebook này bao gồm:
+## 📁 Cấu trúc thư mục
 
-- Clone repository tự động
-- Cấu hình user tier và use case
-- Generate AI Agent context
-- Code examples để test ngay
+| Đường dẫn | Nội dung |
+|---|---|
+| `analysis.py` | Script chính: tải data, tính MA & market breadth, vẽ chart, gửi email |
+| `.github/workflows/` | GitHub Actions workflow (job `build` + job `send_email`) |
+| `notebooks/` | Notebook khám phá dữ liệu / thử nghiệm thư viện vnstock |
+| `test_*.py` | Script thử nhanh các API của vnstock trong lúc dev (không phải unit test chính thức) |
+| `docs/`, `AGENTS.md`, `CLAUDE.md`, `.agents/` | Tài liệu vendor từ [vnstock-agent-guide](https://github.com/vnstock-hq/vnstock-agent-guide) — giúp AI coding agent (Claude, Copilot, Cursor...) dùng đúng API của thư viện vnstock khi hỗ trợ code. **Không phải tài liệu mô tả project này.** |
 
-> 💡 **Lưu ý**: Clone repository để luôn có phiên bản mới nhất thay vì dùng context7 MCP (có thể không được update mới nhất).
+## 🛠️ Công nghệ sử dụng
 
----
+`Python` · `pandas` · `vnstock` · `Plotly` + `kaleido` (xuất PDF) · `GitHub Actions` · `cron-job.org` · `Gmail SMTP`
 
-## 📚 Cấu Trúc Tài Liệu
+## 📄 License
 
-### Setup & Debugging (`docs/setup-and-debug/`)
-
-Hướng dẫn thiết lập môi trường, kiểm tra lỗi và quy trình "Vibe Coding"
-
-### Thư Viện Miễn Phí (`docs/vnstock/`)
-
-Kiến trúc, cài đặt, APIs, và hướng dẫn di chuyển
-
-### Thư Viện Tài Trợ (`docs/vnstock-data/`)
-
-Tính năng nâng cao, phân tích nâng cao, và best practices
-
-### Thư Viện Chuyên Biệt
-
-- **[docs/vnstock_ta/](docs/vnstock_ta/)** - Phân tích kỹ thuật & chỉ báo
-- **[docs/vnstock_news/](docs/vnstock_news/)** - Thu thập tin tức & cảm xúc
-- **[docs/vnstock_pipeline/](docs/vnstock_pipeline/)** - Pipeline dữ liệu & streaming
+© FTU-Kudo
