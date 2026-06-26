@@ -33,6 +33,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 def get_hose_symbols():
     print("Bước 1: Lấy danh sách cổ phiếu HOSE...")
@@ -240,8 +241,7 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
     fig.update_yaxes(title_text="Tỷ lệ (%)", secondary_y=True, range=[0, 100], ticksuffix="%", showgrid=True, gridcolor="gray", gridwidth=0.5, griddash="dot")
 
     # Thêm Annotation
-    from datetime import datetime
-    from zoneinfo import ZoneInfo 
+    
 
     # Chủ động lấy giờ theo múi giờ Việt Nam
     current_time_str = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).strftime("%Y-%m-%d %H:%M:%S")
@@ -318,7 +318,7 @@ if __name__ == "__main__":
 
     fetch_start_date = "2020-06-25" # Lấy dữ liệu sớm hơn 1 năm để tính được MA200 từ 2021-06-25
     plot_start_date = "2021-06-25"
-    end_date = datetime.now().strftime("%Y-%m-%d")  # Luôn lấy đến ngày chạy thực tế, không hard-code
+    end_date = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).strftime("%Y-%m-%d")  # Đồng bộ giờ VN
 
     pdf_files = [
         "market_breadth_chart.pdf",
