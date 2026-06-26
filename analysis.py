@@ -268,34 +268,40 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
 def send_email_with_pdfs(pdf_files):
     sender = os.getenv("GMAIL_USER")
     password = os.getenv("GMAIL_APP_PASSWORD")
-    receiver = os.getenv("GMAIL_RECEIVER")
-    
-    if not sender or not password or not receiver:
+    receivers_raw = os.getenv("GMAIL_RECEIVERS") or os.getenv("GMAIL_RECEIVER")
+
+    if not sender or not password or not receivers_raw:
         print("Không tìm thấy cấu hình Gmail trong biến môi trường. Bỏ qua gửi email.")
         return
-        
-    print(f"Đang gửi email đính kèm biểu đồ tới {receiver}...")
+
+    receivers = [r.strip() for r in receivers_raw.split(",") if r.strip()]
+    if not receivers:
+        print("Danh sách người nhận trống. Bỏ qua gửi email.")
+        return
+
+    print(f"Đang gửi email đính kèm biểu đồ tới {len(receivers)} người nhận (qua BCC)...")
     try:
         msg = MIMEMultipart()
         msg['From'] = sender
-        msg['To'] = receiver
+        msg['To'] = sender  # Để "To" là chính mình, tránh email trông giống spam khi không có người nhận hiển thị
         msg['Subject'] = "Báo cáo phân tích Tương quan giữa VN-Index và Tỷ lệ mã cổ phiếu vượt các đường MA (cập nhật hàng tuần)"
-        
+
         body = "Xin chào Quý khách,\n\nĐây là báo cáo phân tích tương quan giữa VN-Index và Tỷ lệ mã vượt các đường MA (MA10, MA20, MA50, MA200).\nXin Quý khách vui lòng xem các file PDF đính kèm.\n\nTrân trọng,\nFTU-Kudo."
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
-        
+
         for file in pdf_files:
             if os.path.exists(file):
                 with open(file, "rb") as f:
                     part = MIMEApplication(f.read(), Name=os.path.basename(file))
                 part['Content-Disposition'] = f'attachment; filename="{os.path.basename(file)}"'
                 msg.attach(part)
-                
+
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.login(sender, password)
-        server.send_message(msg)
+        # Dùng sendmail với to_addrs riêng (BCC thật) -> khách hàng không thấy email của nhau
+        server.sendmail(sender, [sender] + receivers, msg.as_string())
         server.quit()
-        print("Đã gửi email thành công!")
+        print(f"Đã gửi email thành công tới {len(receivers)} người nhận!")
     except Exception as e:
         print(f"Lỗi khi gửi email: {e}")
 
