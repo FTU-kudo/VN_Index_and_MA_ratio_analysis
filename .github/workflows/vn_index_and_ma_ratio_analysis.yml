@@ -92,10 +92,10 @@ jobs:
         with:
           name: pdf-reports
         continue-on-error: true   # Nếu chạy standalone send-email, dùng luôn PDF đã commit sẵn trong repo
-
+        
       - name: Send email with PDFs
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          GMAIL_RECEIVER: ${{ secrets.GMAIL_RECEIVER }}
-        run: python analysis.py --send-email
+          GMAIL_RECEIVERS: ${{ secrets.GMAIL_RECEIVERS }}
+        run: python analysis.py --send-email       
