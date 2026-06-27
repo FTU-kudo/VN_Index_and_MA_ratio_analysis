@@ -192,8 +192,8 @@ docs/.DS_Store
 .DS_Store
 docs/.DS_Store
 
-# Raw data downloaded — cached between runs using GitHub Actions cache, not committed to git.
+# Raw data downloaded — cached between runs using GitHub Actions cache, not committed to git
 *.csv
 
-# Obsidian config (không liên quan tới project)
+# Obsidian config (This is unrelated to the project)
 .obsidian/
