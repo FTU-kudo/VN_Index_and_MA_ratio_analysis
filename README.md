@@ -64,4 +64,5 @@ python analysis.py     # chạy full: build + gửi email
 
 ## 📄 License
 
-© FTU-Kudo
+Apache License 2.0 — xem chi tiết tại [LICENSE](./LICENSE)
+
