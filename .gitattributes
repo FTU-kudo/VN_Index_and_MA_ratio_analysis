@@ -1,2 +1,15 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Tài liệu & notebook vendor từ vnstock-agent-guide - không phải code tự viết,
+# loại khỏi thống kê ngôn ngữ (GitHub Linguist) để repo phản ánh đúng công việc thật
+docs/** linguist-vendored=true
+notebooks/** linguist-vendored=true
+.agents/** linguist-vendored=true
+AGENTS.md linguist-vendored=true
+CLAUDE.md linguist-vendored=true
+CHANGELOG.md linguist-vendored=true
+context7.json linguist-vendored=true
+
+# Chart HTML do Plotly tự sinh ra, không phải code viết tay
+output/*.html linguist-generated=true
