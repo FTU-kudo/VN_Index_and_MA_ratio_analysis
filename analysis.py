@@ -255,8 +255,9 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
         font=dict(size=12, color="gray"),
         xanchor="right", yanchor="top"
     )
-
+    os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
     fig.write_html(output_file)
+
     pdf_file = output_file.replace('.html', '.pdf')
     try:
         fig.write_image(pdf_file, format="pdf", width=1200, height=800, engine="kaleido")
@@ -321,9 +322,9 @@ if __name__ == "__main__":
     end_date = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).strftime("%Y-%m-%d")  # Đồng bộ giờ VN
 
     pdf_files = [
-        "market_breadth_chart.pdf",
-        "market_breadth_chart_ma10_ma20.pdf",
-        "market_breadth_chart_ma50_ma200.pdf"
+        "output/market_breadth_chart.pdf",
+        "output/market_breadth_chart_ma10_ma20.pdf",
+        "output/market_breadth_chart_ma50_ma200.pdf"
     ]
 
     if run_build:
@@ -344,9 +345,9 @@ if __name__ == "__main__":
                 if not vnindex.empty:
                     # Vẽ biểu đồ
                     print("Bước 5: Vẽ biểu đồ và lưu ra file HTML/PDF...")
-                    plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20', 'pct_MA50', 'pct_MA200'], "các đường MA (MA10, MA20, MA50, MA200)", "market_breadth_chart.html", plot_start_date=plot_start_date)
-                    plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20'], "MA10 và MA20", "market_breadth_chart_ma10_ma20.html", plot_start_date=plot_start_date)
-                    plot_market_breadth(stats, vnindex, ['pct_MA50', 'pct_MA200'], "MA50 và MA200", "market_breadth_chart_ma50_ma200.html", plot_start_date=plot_start_date)
+                    plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20', 'pct_MA50', 'pct_MA200'], "các đường MA (MA10, MA20, MA50, MA200)", "output/market_breadth_chart.html", plot_start_date=plot_start_date)
+                    plot_market_breadth(stats, vnindex, ['pct_MA10', 'pct_MA20'], "MA10 và MA20", "output/market_breadth_chart_ma10_ma20.html", plot_start_date=plot_start_date)
+                    plot_market_breadth(stats, vnindex, ['pct_MA50', 'pct_MA200'], "MA50 và MA200", "output/market_breadth_chart_ma50_ma200.html", plot_start_date=plot_start_date)
                     print("Hoàn thành bước build!")
                 else:
                     print("Không có dữ liệu VNINDEX để vẽ biểu đồ.")
