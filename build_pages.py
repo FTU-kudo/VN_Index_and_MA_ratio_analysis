@@ -6,7 +6,7 @@ cho GitHub Pages.
 
 Bổ sung vào trang:
   ① Thanh điều khiển đầu trang:
-       - Ô tick [✓] MA10  [✓] MA20  [✓] MA50  [✓] MA200  (click để ẩn/hiện từng đường)
+       - Ô tick [✓] MA10  [✓] MA20  [✓] MA50  [✓] MA200  (click để ẩn/hiện từng đường MA)
        - Giờ truy cập web của người dùng (UTC+7, do JavaScript tính trong trình duyệt)
   ② Dòng cuối trang: "📅 Dữ liệu được xuất bản lúc: dd/mm/yyyy HH:MM:SS (GMT+7) — © Bản quyền thuộc về FTU-Kudo"  ← baked-in từ CI
 
