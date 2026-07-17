@@ -102,6 +102,15 @@ BOTTOM_SNIPPET = """\
     { id: 'cb-ma200', kw: 'ma200' }
   ];
 
+/* ── 2. Gắn ô tick MA → Plotly.restyle (ẩn/hiện trace tương ứng) ── */
+(function () {
+  var MA_MAP = [
+    { id: 'cb-ma10',  kw: 'ma10'  },
+    { id: 'cb-ma20',  kw: 'ma20'  },
+    { id: 'cb-ma50',  kw: 'ma50'  },
+    { id: 'cb-ma200', kw: 'ma200' }
+  ];
+
   function bindCheckboxes(gdiv) {
     MA_MAP.forEach(function (ma) {
       var cb = document.getElementById(ma.id);
@@ -110,23 +119,23 @@ BOTTOM_SNIPPET = """\
       cb.addEventListener('change', function () {
         if (typeof Plotly === 'undefined') return;
 
-        /* Tìm tất cả trace index có tên chứa keyword */
+        // Dùng regex với word boundary để match chính xác từ khóa
+        var regex = new RegExp('\\b' + ma.kw + '\\b', 'i');
         var indices = [];
         (gdiv.data || []).forEach(function (trace, i) {
-          if (trace.name && trace.name.toLowerCase().indexOf(ma.kw) !== -1) {
+          if (trace.name && regex.test(trace.name)) {
             indices.push(i);
           }
         });
 
         if (indices.length > 0) {
-          /* true = hiện, 'legendonly' = ẩn khỏi chart nhưng vẫn giữ trong legend */
           Plotly.restyle(gdiv, { visible: [cb.checked ? true : 'legendonly'] }, indices);
         }
       });
     });
   }
 
-  /* Poll 100 ms cho đến khi Plotly render xong và gdiv.data có dữ liệu (tối đa 10 s) */
+  /* Polling như cũ */
   var tries = 0;
   var timer = setInterval(function () {
     var gd = document.querySelector('.js-plotly-plot');
