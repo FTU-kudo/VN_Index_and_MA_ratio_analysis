@@ -3,6 +3,7 @@ import time
 import os
 import sys
 import argparse
+import copy  # Thêm import để deepcopy figure
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 from vnstock import Quote, Listing
@@ -240,14 +241,18 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
     fig.update_yaxes(title_text="VN-Index (điểm)", secondary_y=False, showgrid=False)
     fig.update_yaxes(title_text="Tỷ lệ (%)", secondary_y=True, range=[0, 100], ticksuffix="%", showgrid=True, gridcolor="gray", gridwidth=0.5, griddash="dot")
 
-    # Thêm Annotation
-    
+    # Tạo thư mục đầu ra
+    os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
 
-    # Chủ động lấy giờ theo múi giờ Việt Nam
+    # Xuất HTML từ figure gốc (không có annotation credit)
+    fig.write_html(output_file)
+    print(f"Đã lưu HTML (không credit): {output_file}")
+
+    # Tạo bản sao cho PDF và thêm annotation
+    fig_pdf = copy.deepcopy(fig)
     current_time_str = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).strftime("%Y-%m-%d %H:%M:%S")
     credit_text = "© Bản quyền thuộc về FTU-Kudo"
-    
-    fig.add_annotation(
+    fig_pdf.add_annotation(
         text=f"{credit_text} | Ngày cập nhật: {current_time_str}",
         xref="paper", yref="paper",
         x=1.0, y=-0.22,
@@ -255,16 +260,13 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
         font=dict(size=12, color="gray"),
         xanchor="right", yanchor="top"
     )
-    os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
-    fig.write_html(output_file)
 
     pdf_file = output_file.replace('.html', '.pdf')
     try:
-        fig.write_image(pdf_file, format="pdf", width=1200, height=800, engine="kaleido")
+        fig_pdf.write_image(pdf_file, format="pdf", width=1200, height=800, engine="kaleido")
+        print(f"Đã lưu PDF (có credit): {pdf_file}")
     except Exception as e:
         print(f"Lỗi khi lưu PDF (có thể do thiếu kaleido): {e}")
-        
-    print(f"Đã lưu biểu đồ thành công vào: {output_file} và {pdf_file}")
 
 def send_email_with_pdfs(pdf_files):
     sender = os.getenv("GMAIL_USER")
