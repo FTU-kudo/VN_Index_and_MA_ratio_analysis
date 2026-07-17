@@ -3927,7 +3927,7 @@ return Plotly;
     text-align:center; padding:8px 0 18px; margin-top:4px;
     font-size:11.5px; color:#888; background:#fafafa; border-top:1px solid #eee;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-  📅&nbsp;Dữ liệu xuất bản lúc:&nbsp;<strong>17/07/2026 16:21:27</strong>&nbsp;(GMT+7) — © Bản quyền thuộc về FTU-Kudo
+  📅&nbsp;Dữ liệu xuất bản lúc:&nbsp;<strong>17/07/2026 16:25:28</strong>&nbsp;(GMT+7) — © Bản quyền thuộc về FTU-Kudo
 </div>
 
 <script>
@@ -3947,6 +3947,7 @@ return Plotly;
 
 /* ── 2. Gắn ô tick MA → Plotly.restyle (ẩn/hiện trace) ── */
 (function () {
+  // Định nghĩa từ khóa tìm kiếm trong tên trace
   var MA_MAP = [
     { id: 'cb-ma10',  kw: 'ma10'  },
     { id: 'cb-ma20',  kw: 'ma20'  },
@@ -3954,21 +3955,31 @@ return Plotly;
     { id: 'cb-ma200', kw: 'ma200' }
   ];
 
+  // Hàm gán sự kiện cho checkbox
   function bindCheckboxes(gdiv) {
+    // In ra tên các trace để debug
+    console.log('Danh sách trace names trong biểu đồ:');
+    (gdiv.data || []).forEach(function (trace, i) {
+      console.log(i + ': ' + (trace.name || '(không có tên)'));
+    });
+
     MA_MAP.forEach(function (ma) {
       var cb = document.getElementById(ma.id);
       if (!cb) {
-        console.warn('Không tìm thấy checkbox #' + ma.id);
+        console.warn('⚠️ Không tìm thấy checkbox #' + ma.id);
         return;
       }
 
       cb.addEventListener('change', function () {
+        console.log('Checkbox ' + ma.id + ' thay đổi -> checked =', cb.checked);
+
         if (typeof Plotly === 'undefined') {
-          console.warn('Plotly chưa sẵn sàng');
+          console.warn('⚠️ Plotly chưa được định nghĩa.');
           return;
         }
 
-        // Tìm các trace có tên chứa keyword (dùng regex để không bị lẫn MA200 với MA20)
+        // Tìm các trace có tên chứa từ khóa (không phân biệt hoa thường)
+        // Dùng regex với word boundary để tránh nhầm MA200 với MA20
         var regex = new RegExp('\b' + ma.kw + '\b', 'i');
         var indices = [];
         (gdiv.data || []).forEach(function (trace, i) {
@@ -3977,10 +3988,12 @@ return Plotly;
           }
         });
 
+        console.log('Tìm thấy ' + indices.length + ' trace cho từ khóa "' + ma.kw + '" : indices =', indices);
+
         if (indices.length > 0) {
           Plotly.restyle(gdiv, { visible: [cb.checked ? true : 'legendonly'] }, indices);
         } else {
-          console.warn('Không tìm thấy trace nào cho từ khóa: ' + ma.kw);
+          console.warn('⚠️ Không tìm thấy trace nào cho "' + ma.kw + '". Kiểm tra lại tên trace.');
         }
       });
     });
@@ -3992,13 +4005,13 @@ return Plotly;
     var gd = document.querySelector('.js-plotly-plot');
     if (gd && gd.data && gd.data.length > 0) {
       clearInterval(timer);
+      console.log('✅ Biểu đồ đã sẵn sàng, tiến hành gắn sự kiện checkbox.');
       bindCheckboxes(gd);
-      console.log('Đã gắn sự kiện cho các checkbox MA.');
       return;
     }
     if (++tries > 100) {
       clearInterval(timer);
-      console.warn('Không tìm thấy biểu đồ Plotly sau 10 giây.');
+      console.warn('⚠️ Không tìm thấy biểu đồ Plotly sau 10 giây.');
     }
   }, 100);
 })();
