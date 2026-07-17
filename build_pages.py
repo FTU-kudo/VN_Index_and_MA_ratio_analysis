@@ -6,9 +6,9 @@ cho GitHub Pages.
 
 Bổ sung vào trang:
   ① Thanh điều khiển đầu trang:
-       - Ô tick [✓] MA10  [✓] MA20  [✓] MA50  [✓] MA200  (click để ẩn/hiện từng đường MA)
+       - Ô tick [✓] MA10  [✓] MA20  [✓] MA50  [✓] MA200  (click để ẩn/hiện từng đường)
        - Giờ truy cập web của người dùng (UTC+7, do JavaScript tính trong trình duyệt)
-  ② Dòng cuối trang: "📅 Dữ liệu được xuất bản lúc: dd/mm/yyyy HH:MM:SS (GMT+7) — © Bản quyền thuộc về FTU-Kudo"  ← baked-in từ CI
+  ② Dòng cuối trang: "📅 Dữ liệu xuất bản lúc: dd/mm/yyyy HH:MM:SS (GMT+7) — © Bản quyền thuộc về FTU-Kudo"  ← baked-in từ CI
 
 Chạy:
     python build_pages.py
@@ -92,6 +92,7 @@ BOTTOM_SNIPPET = """\
 
 /* ── 2. Gắn ô tick MA → Plotly.restyle (ẩn/hiện trace) ── */
 (function () {
+  // Định nghĩa từ khóa tìm kiếm trong tên trace
   var MA_MAP = [
     { id: 'cb-ma10',  kw: 'ma10'  },
     { id: 'cb-ma20',  kw: 'ma20'  },
@@ -99,21 +100,31 @@ BOTTOM_SNIPPET = """\
     { id: 'cb-ma200', kw: 'ma200' }
   ];
 
+  // Hàm gán sự kiện cho checkbox
   function bindCheckboxes(gdiv) {
+    // In ra tên các trace để debug
+    console.log('Danh sách trace names trong biểu đồ:');
+    (gdiv.data || []).forEach(function (trace, i) {
+      console.log(i + ': ' + (trace.name || '(không có tên)'));
+    });
+
     MA_MAP.forEach(function (ma) {
       var cb = document.getElementById(ma.id);
       if (!cb) {
-        console.warn('Không tìm thấy checkbox #' + ma.id);
+        console.warn('⚠️ Không tìm thấy checkbox #' + ma.id);
         return;
       }
 
       cb.addEventListener('change', function () {
+        console.log('Checkbox ' + ma.id + ' thay đổi -> checked =', cb.checked);
+
         if (typeof Plotly === 'undefined') {
-          console.warn('Plotly chưa sẵn sàng');
+          console.warn('⚠️ Plotly chưa được định nghĩa.');
           return;
         }
 
-        // Tìm các trace có tên chứa keyword (dùng regex để không bị lẫn MA200 với MA20)
+        // Tìm các trace có tên chứa từ khóa (không phân biệt hoa thường)
+        // Dùng regex với word boundary để tránh nhầm MA200 với MA20
         var regex = new RegExp('\\\\b' + ma.kw + '\\\\b', 'i');
         var indices = [];
         (gdiv.data || []).forEach(function (trace, i) {
@@ -122,10 +133,12 @@ BOTTOM_SNIPPET = """\
           }
         });
 
+        console.log('Tìm thấy ' + indices.length + ' trace cho từ khóa "' + ma.kw + '" : indices =', indices);
+
         if (indices.length > 0) {
           Plotly.restyle(gdiv, { visible: [cb.checked ? true : 'legendonly'] }, indices);
         } else {
-          console.warn('Không tìm thấy trace nào cho từ khóa: ' + ma.kw);
+          console.warn('⚠️ Không tìm thấy trace nào cho "' + ma.kw + '". Kiểm tra lại tên trace.');
         }
       });
     });
@@ -137,13 +150,13 @@ BOTTOM_SNIPPET = """\
     var gd = document.querySelector('.js-plotly-plot');
     if (gd && gd.data && gd.data.length > 0) {
       clearInterval(timer);
+      console.log('✅ Biểu đồ đã sẵn sàng, tiến hành gắn sự kiện checkbox.');
       bindCheckboxes(gd);
-      console.log('Đã gắn sự kiện cho các checkbox MA.');
       return;
     }
     if (++tries > 100) {
       clearInterval(timer);
-      console.warn('Không tìm thấy biểu đồ Plotly sau 10 giây.');
+      console.warn('⚠️ Không tìm thấy biểu đồ Plotly sau 10 giây.');
     }
   }, 100);
 })();
