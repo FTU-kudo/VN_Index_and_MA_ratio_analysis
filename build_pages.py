@@ -8,7 +8,7 @@ Bổ sung vào trang:
   ① Thanh điều khiển đầu trang:
        - Ô tick [✓] MA10  [✓] MA20  [✓] MA50  [✓] MA200  (click để ẩn/hiện từng đường)
        - Giờ truy cập web của người dùng (UTC+7, do JavaScript tính trong trình duyệt)
-  ② Dòng cuối trang: "📅 Dữ liệu xuất bản lúc: dd/mm/yyyy HH:MM:SS (GMT+7) — © Bản quyền thuộc về FTU-Kudo"  ← baked-in từ CI
+  ② Dòng cuối trang: "📅 Dữ liệu xuất bản lúc: dd/mm/yyyy HH:MM:SS (GMT+7) — © Bản quyền thuộc về FTU-Kudo"
 
 Chạy:
     python build_pages.py
@@ -22,6 +22,33 @@ from pathlib import Path
 SRC  = Path("output/market_breadth_chart.html")
 DEST = Path("docs/index.html")
 VN   = timezone(timedelta(hours=7))
+
+
+# ── Style để trang vừa vặn màn hình ────────────────────────────────────────
+STYLE_BLOCK = """\
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  #vn-topbar {
+    flex-shrink: 0;
+  }
+  .vn-footer {
+    flex-shrink: 0;
+  }
+  .js-plotly-plot {
+    flex: 1;
+    min-height: 0;
+  }
+</style>
+"""
 
 
 # ── ① Thanh điều khiển (chèn ngay sau thẻ <body ...>) ─────────────────────
@@ -68,7 +95,7 @@ TOP_BAR = """\
 # ── ② Script + dòng xuất bản (chèn trước </body>) ─────────────────────────
 BOTTOM_SNIPPET = """\
 <!-- ── Injected by build_pages.py ── -->
-<div style="
+<div class="vn-footer" style="
     text-align:center; padding:8px 0 18px; margin-top:4px;
     font-size:11.5px; color:#888; background:#fafafa; border-top:1px solid #eee;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
@@ -92,7 +119,6 @@ BOTTOM_SNIPPET = """\
 
 /* ── 2. Gắn ô tick MA → Plotly.restyle (ẩn/hiện trace) ── */
 (function () {
-  // Định nghĩa từ khóa tìm kiếm trong tên trace
   var MA_MAP = [
     { id: 'cb-ma10',  kw: 'ma10'  },
     { id: 'cb-ma20',  kw: 'ma20'  },
@@ -100,74 +126,38 @@ BOTTOM_SNIPPET = """\
     { id: 'cb-ma200', kw: 'ma200' }
   ];
 
-  // Hàm kiểm tra trace có khớp với keyword không (tránh nhầm lẫn)
-  function isTraceMatching(traceName, keyword) {
-    if (!traceName) return false;
-    var lower = traceName.toLowerCase();
-    // Kiểm tra chứa từ khóa
-    if (lower.indexOf(keyword) === -1) return false;
-    // Nếu keyword là 'ma20' thì không được chứa 'ma200'
-    if (keyword === 'ma20' && lower.indexOf('ma200') !== -1) return false;
-    // Nếu keyword là 'ma10' thì không được chứa 'ma100' (đề phòng có MA100)
-    if (keyword === 'ma10' && lower.indexOf('ma100') !== -1) return false;
-    return true;
-  }
-
   function bindCheckboxes(gdiv) {
-    // In ra tên các trace để debug
-    console.log('Danh sách trace names trong biểu đồ:');
-    (gdiv.data || []).forEach(function (trace, i) {
-      console.log(i + ': ' + (trace.name || '(không có tên)'));
-    });
-
     MA_MAP.forEach(function (ma) {
       var cb = document.getElementById(ma.id);
-      if (!cb) {
-        console.warn('⚠️ Không tìm thấy checkbox #' + ma.id);
-        return;
-      }
+      if (!cb) return;
 
       cb.addEventListener('change', function () {
-        console.log('Checkbox ' + ma.id + ' thay đổi -> checked =', cb.checked);
+        if (typeof Plotly === 'undefined') return;
 
-        if (typeof Plotly === 'undefined') {
-          console.warn('⚠️ Plotly chưa được định nghĩa.');
-          return;
-        }
-
-        // Tìm các trace khớp với keyword
+        // Dùng regex với word boundary để chỉ match đúng từ khóa
+        var regex = new RegExp('\\\\b' + ma.kw + '\\\\b', 'i');
         var indices = [];
         (gdiv.data || []).forEach(function (trace, i) {
-          if (isTraceMatching(trace.name, ma.kw)) {
+          if (trace.name && regex.test(trace.name)) {
             indices.push(i);
           }
         });
 
-        console.log('Tìm thấy ' + indices.length + ' trace cho từ khóa "' + ma.kw + '" : indices =', indices);
-
         if (indices.length > 0) {
           Plotly.restyle(gdiv, { visible: [cb.checked ? true : 'legendonly'] }, indices);
-        } else {
-          console.warn('⚠️ Không tìm thấy trace nào cho "' + ma.kw + '". Kiểm tra lại tên trace.');
         }
       });
     });
   }
 
-  /* Poll 100 ms cho đến khi Plotly render xong và gdiv.data có dữ liệu (tối đa 10 s) */
   var tries = 0;
   var timer = setInterval(function () {
     var gd = document.querySelector('.js-plotly-plot');
     if (gd && gd.data && gd.data.length > 0) {
       clearInterval(timer);
-      console.log('✅ Biểu đồ đã sẵn sàng, tiến hành gắn sự kiện checkbox.');
       bindCheckboxes(gd);
-      return;
     }
-    if (++tries > 100) {
-      clearInterval(timer);
-      console.warn('⚠️ Không tìm thấy biểu đồ Plotly sau 10 giây.');
-    }
+    if (++tries > 100) clearInterval(timer);
   }, 100);
 })();
 </script>
@@ -183,10 +173,10 @@ def main():
     published = datetime.now(VN).strftime("%d/%m/%Y %H:%M:%S")
     html      = SRC.read_text(encoding="utf-8")
 
-    # 1. Chèn TOP_BAR ngay sau thẻ <body ...> (hỗ trợ <body> và <body class="..."> v.v.)
+    # 1. Chèn STYLE_BLOCK và TOP_BAR ngay sau thẻ <body ...>
     html = re.sub(
         r"(<body[^>]*>)",
-        r"\1\n" + TOP_BAR,
+        r"\1\n" + STYLE_BLOCK + TOP_BAR,
         html,
         count=1,
         flags=re.IGNORECASE,
@@ -197,7 +187,6 @@ def main():
     if re.search(r"</body>", html, re.IGNORECASE):
         html = re.sub(r"</body>", bottom, html, count=1, flags=re.IGNORECASE)
     else:
-        # Fallback: HTML không có </body>
         html += "\n" + bottom.replace("</body>", "")
 
     DEST.parent.mkdir(parents=True, exist_ok=True)
