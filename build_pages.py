@@ -66,18 +66,17 @@ TOP_BAR = """\
 """
 
 # ── ② Script + dòng xuất bản (chèn trước </body>) ─────────────────────────
-# Dùng replace("{published}", ...) thủ công để không cần escape {{ }} trong JS
 BOTTOM_SNIPPET = """\
 <!-- ── Injected by build_pages.py ── -->
 <div style="
     text-align:center; padding:8px 0 18px; margin-top:4px;
     font-size:11.5px; color:#888; background:#fafafa; border-top:1px solid #eee;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-  📅&nbsp;Dữ liệu được xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(GMT+7) — © Bản quyền thuộc về FTU-Kudo
+  📅&nbsp;Dữ liệu xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(GMT+7) — © Bản quyền thuộc về FTU-Kudo
 </div>
 
 <script>
-/* ── 1. Hiển thị giờ truy cập theo UTC+7 (độc lập timezone máy người dùng) ── */
+/* ── 1. Hiển thị giờ truy cập theo UTC+7 ── */
 (function () {
   function toVN(d) {
     var ms = d.getTime() + d.getTimezoneOffset() * 60000 + 7 * 3600000;
@@ -91,18 +90,7 @@ BOTTOM_SNIPPET = """\
   if (el) el.textContent = toVN(new Date());
 })();
 
-/* ── 2. Gắn ô tick MA → Plotly.restyle (ẩn/hiện trace tương ứng) ── */
-(function () {
-  /* Tên keyword trong legend của từng đường MA.
-     Plotly tìm trace theo: trace.name.toLowerCase().indexOf(keyword) !== -1  */
-  var MA_MAP = [
-    { id: 'cb-ma10',  kw: 'ma10'  },
-    { id: 'cb-ma20',  kw: 'ma20'  },
-    { id: 'cb-ma50',  kw: 'ma50'  },
-    { id: 'cb-ma200', kw: 'ma200' }
-  ];
-
-/* ── 2. Gắn ô tick MA → Plotly.restyle (ẩn/hiện trace tương ứng) ── */
+/* ── 2. Gắn ô tick MA → Plotly.restyle (ẩn/hiện trace) ── */
 (function () {
   var MA_MAP = [
     { id: 'cb-ma10',  kw: 'ma10'  },
@@ -114,13 +102,19 @@ BOTTOM_SNIPPET = """\
   function bindCheckboxes(gdiv) {
     MA_MAP.forEach(function (ma) {
       var cb = document.getElementById(ma.id);
-      if (!cb) return;
+      if (!cb) {
+        console.warn('Không tìm thấy checkbox #' + ma.id);
+        return;
+      }
 
       cb.addEventListener('change', function () {
-        if (typeof Plotly === 'undefined') return;
+        if (typeof Plotly === 'undefined') {
+          console.warn('Plotly chưa sẵn sàng');
+          return;
+        }
 
-        // Dùng regex với word boundary để match chính xác từ khóa
-        var regex = new RegExp('\\b' + ma.kw + '\\b', 'i');
+        // Tìm các trace có tên chứa keyword (dùng regex để không bị lẫn MA200 với MA20)
+        var regex = new RegExp('\\\\b' + ma.kw + '\\\\b', 'i');
         var indices = [];
         (gdiv.data || []).forEach(function (trace, i) {
           if (trace.name && regex.test(trace.name)) {
@@ -130,20 +124,27 @@ BOTTOM_SNIPPET = """\
 
         if (indices.length > 0) {
           Plotly.restyle(gdiv, { visible: [cb.checked ? true : 'legendonly'] }, indices);
+        } else {
+          console.warn('Không tìm thấy trace nào cho từ khóa: ' + ma.kw);
         }
       });
     });
   }
 
-  /* Polling như cũ */
+  /* Poll 100 ms cho đến khi Plotly render xong và gdiv.data có dữ liệu (tối đa 10 s) */
   var tries = 0;
   var timer = setInterval(function () {
     var gd = document.querySelector('.js-plotly-plot');
     if (gd && gd.data && gd.data.length > 0) {
       clearInterval(timer);
       bindCheckboxes(gd);
+      console.log('Đã gắn sự kiện cho các checkbox MA.');
+      return;
     }
-    if (++tries > 100) clearInterval(timer);
+    if (++tries > 100) {
+      clearInterval(timer);
+      console.warn('Không tìm thấy biểu đồ Plotly sau 10 giây.');
+    }
   }, 100);
 })();
 </script>
