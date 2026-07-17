@@ -86,7 +86,7 @@ TOP_BAR = """\
 
   <!-- Giờ truy cập -->
   <div style="color:#555; font-size:12.5px; white-space:nowrap;">
-    🕐&nbsp;Bạn truy cập lúc:&nbsp;<strong><span id="vn-access-time">–</span></strong>
+    🕐&nbsp;Đã truy cập lúc:&nbsp;<strong><span id="vn-access-time">–</span></strong>
   </div>
 
 </div>
@@ -99,7 +99,7 @@ BOTTOM_SNIPPET = """\
     text-align:center; padding:8px 0 18px; margin-top:4px;
     font-size:11.5px; color:#888; background:#fafafa; border-top:1px solid #eee;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-  📅&nbsp;Dữ liệu xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(GMT+7) — © Bản quyền thuộc về FTU-Kudo
+  📅&nbsp;Dữ liệu xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(UTC+7) — © Bản quyền thuộc về FTU-Kudo
 </div>
 
 <script>
