@@ -8,7 +8,7 @@ Bổ sung vào trang:
   ① Thanh điều khiển đầu trang:
        - Ô tick [✓] MA10  [✓] MA20  [✓] MA50  [✓] MA200  (click để ẩn/hiện từng đường)
        - Giờ truy cập web của người dùng (UTC+7, do JavaScript tính trong trình duyệt)
-  ② Dòng cuối trang: "📅 Dữ liệu được xuất bản lúc: dd/mm/yyyy HH:MM:SS (GMT+7) — © Bản quyền thuộc về FTU-Kudo"
+  ② Dòng cuối trang: "📅 Dữ liệu được xuất bản lúc: dd/mm/yyyy HH:MM:SS (UTC+7) — © Bản quyền thuộc về FTU-Kudo"
 
 Chạy:
     python build_pages.py
@@ -27,6 +27,7 @@ VN   = timezone(timedelta(hours=7))
 # ── Style để trang vừa vặn màn hình, footer luôn hiển thị ────────────────
 STYLE_BLOCK = """\
 <style>
+  * { box-sizing: border-box; }
   html, body {
     margin: 0;
     padding: 0;
@@ -40,13 +41,18 @@ STYLE_BLOCK = """\
   #vn-topbar {
     flex-shrink: 0;
   }
+  #main-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  #main-content .js-plotly-plot,
+  #main-content .plotly-graph-div {
+    height: 100% !important;
+    width: 100% !important;
+  }
   .vn-footer {
     flex-shrink: 0;
-    flex-grow: 0;
-  }
-  .js-plotly-plot {
-    flex: 1;
-    min-height: 0;
   }
 </style>
 """
@@ -87,7 +93,7 @@ TOP_BAR = """\
 
   <!-- Giờ truy cập -->
   <div style="color:#555; font-size:12.5px; white-space:nowrap;">
-    🕐&nbsp;Bạn truy cập lúc:&nbsp;<strong><span id="vn-access-time">–</span></strong>
+    🕐&nbsp;Đã truy cập lúc:&nbsp;<strong><span id="vn-access-time">–</span></strong>
   </div>
 
 </div>
@@ -100,7 +106,7 @@ BOTTOM_SNIPPET = """\
     text-align:center; padding:8px 0 18px; margin-top:4px;
     font-size:11.5px; color:#888; background:#fafafa; border-top:1px solid #eee;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-  📅&nbsp;Dữ liệu được xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(GMT+7) — © Bản quyền thuộc về FTU-Kudo
+  📅&nbsp;Dữ liệu được xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(UTC+7) — © Bản quyền thuộc về FTU-Kudo
 </div>
 
 <script>
@@ -112,7 +118,7 @@ BOTTOM_SNIPPET = """\
     var p  = function (n) { return ('0' + n).slice(-2); };
     return p(v.getDate()) + '/' + p(v.getMonth() + 1) + '/' + v.getFullYear()
          + ' ' + p(v.getHours()) + ':' + p(v.getMinutes()) + ':' + p(v.getSeconds())
-         + ' (GMT+7)';
+         + ' (UTC+7)';
   }
   var el = document.getElementById('vn-access-time');
   if (el) el.textContent = toVN(new Date());
@@ -155,8 +161,9 @@ BOTTOM_SNIPPET = """\
           return;
         }
 
-        // SỬA LỖI: dùng regex với word boundary để chỉ match đúng từ khóa
-        var regex = new RegExp('\\\\b' + ma.kw + '\\\\b', 'i');
+        // SỬA LỖI: dùng regex với word boundary (\\b) để chỉ match đúng từ khóa
+        // Python string: 8 dấu backslash -> JS nhận được '\\b' + kw + '\\b'
+        var regex = new RegExp('\\\\\\\\b' + ma.kw + '\\\\\\\\b', 'i');
         var indices = [];
         (gdiv.data || []).forEach(function (trace, i) {
           if (trace.name && regex.test(trace.name)) {
@@ -203,17 +210,17 @@ def main():
     published = datetime.now(VN).strftime("%d/%m/%Y %H:%M:%S")
     html      = SRC.read_text(encoding="utf-8")
 
-    # 1. Chèn STYLE_BLOCK và TOP_BAR ngay sau thẻ <body ...>
+    # 1. Chèn STYLE_BLOCK, TOP_BAR và mở div#main-content ngay sau thẻ <body>
     html = re.sub(
         r"(<body[^>]*>)",
-        r"\1\n" + STYLE_BLOCK + TOP_BAR,
+        r"\1\n" + STYLE_BLOCK + TOP_BAR + '<div id="main-content">',
         html,
         count=1,
         flags=re.IGNORECASE,
     )
 
-    # 2. Thay placeholder {published} rồi chèn trước </body>
-    bottom = BOTTOM_SNIPPET.replace("{published}", published)
+    # 2. Đóng div#main-content và chèn footer + script trước </body>
+    bottom = "</div>" + BOTTOM_SNIPPET.replace("{published}", published)
     if re.search(r"</body>", html, re.IGNORECASE):
         html = re.sub(r"</body>", bottom, html, count=1, flags=re.IGNORECASE)
     else:
@@ -221,7 +228,7 @@ def main():
 
     DEST.parent.mkdir(parents=True, exist_ok=True)
     DEST.write_text(html, encoding="utf-8")
-    print(f"✅  docs/index.html đã tạo  —  xuất bản: {published} (GMT+7)")
+    print(f"✅  docs/index.html đã tạo  —  xuất bản: {published} (UTC+7)")
 
 
 if __name__ == "__main__":
