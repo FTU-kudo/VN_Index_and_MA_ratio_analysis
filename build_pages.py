@@ -132,9 +132,13 @@ BOTTOM_SNIPPET = """\
     console.log('✅ Đã tìm thấy biểu đồ, bắt đầu gắn sự kiện.');
     // In danh sách trace để debug
     console.log('📊 Danh sách trace names:');
-    (gdiv.data || []).forEach(function (trace, i) {
-      console.log('  ' + i + ': ' + (trace.name || '(không tên)'));
-    });
+    if (gdiv.data && gdiv.data.length > 0) {
+      (gdiv.data).forEach(function (trace, i) {
+        console.log('  ' + i + ': ' + (trace.name || '(không tên)'));
+      });
+    } else {
+      console.warn('⚠️ Biểu đồ không có dữ liệu (gdiv.data rỗng hoặc undefined)');
+    }
 
     MA_MAP.forEach(function (ma) {
       var cb = document.getElementById(ma.id);
@@ -151,11 +155,21 @@ BOTTOM_SNIPPET = """\
           return;
         }
 
-        var regex = new RegExp('\\\\b' + ma.kw + '\\\\b', 'i');
+        // Lấy danh sách tất cả tên trace để debug
+        var traceNames = [];
+        (gdiv.data || []).forEach(function (trace, i) {
+          traceNames.push(i + ': ' + (trace.name || ''));
+        });
+        console.log('📌 Tất cả trace names hiện tại:', traceNames);
+
+        // Tìm các trace có tên chứa từ khóa (không phân biệt hoa thường)
         var indices = [];
         (gdiv.data || []).forEach(function (trace, i) {
-          if (trace.name && regex.test(trace.name)) {
-            indices.push(i);
+          if (trace.name) {
+            var nameLower = trace.name.toLowerCase();
+            if (nameLower.indexOf(ma.kw) !== -1) {
+              indices.push(i);
+            }
           }
         });
 
@@ -173,7 +187,8 @@ BOTTOM_SNIPPET = """\
   /* Poll để đợi Plotly render */
   var tries = 0;
   var timer = setInterval(function () {
-    var gd = document.querySelector('.js-plotly-plot');
+    // Thử nhiều selector để tìm biểu đồ
+    var gd = document.querySelector('.js-plotly-plot') || document.querySelector('div.plotly-graph-div') || document.querySelector('.plotly');
     if (gd && gd.data && gd.data.length > 0) {
       clearInterval(timer);
       bindCheckboxes(gd);
