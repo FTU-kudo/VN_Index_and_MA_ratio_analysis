@@ -100,7 +100,19 @@ BOTTOM_SNIPPET = """\
     { id: 'cb-ma200', kw: 'ma200' }
   ];
 
-  // Hàm gán sự kiện cho checkbox
+  // Hàm kiểm tra trace có khớp với keyword không (tránh nhầm lẫn)
+  function isTraceMatching(traceName, keyword) {
+    if (!traceName) return false;
+    var lower = traceName.toLowerCase();
+    // Kiểm tra chứa từ khóa
+    if (lower.indexOf(keyword) === -1) return false;
+    // Nếu keyword là 'ma20' thì không được chứa 'ma200'
+    if (keyword === 'ma20' && lower.indexOf('ma200') !== -1) return false;
+    // Nếu keyword là 'ma10' thì không được chứa 'ma100' (đề phòng có MA100)
+    if (keyword === 'ma10' && lower.indexOf('ma100') !== -1) return false;
+    return true;
+  }
+
   function bindCheckboxes(gdiv) {
     // In ra tên các trace để debug
     console.log('Danh sách trace names trong biểu đồ:');
@@ -123,12 +135,10 @@ BOTTOM_SNIPPET = """\
           return;
         }
 
-        // Tìm các trace có tên chứa từ khóa (không phân biệt hoa thường)
-        // Dùng regex với word boundary để tránh nhầm MA200 với MA20
-        var regex = new RegExp('\\\\b' + ma.kw + '\\\\b', 'i');
+        // Tìm các trace khớp với keyword
         var indices = [];
         (gdiv.data || []).forEach(function (trace, i) {
-          if (trace.name && regex.test(trace.name)) {
+          if (isTraceMatching(trace.name, ma.kw)) {
             indices.push(i);
           }
         });
