@@ -8,7 +8,7 @@ Bổ sung vào trang:
   ① Thanh điều khiển đầu trang:
        - Ô tick [✓] MA10  [✓] MA20  [✓] MA50  [✓] MA200  (click để ẩn/hiện từng đường)
        - Giờ truy cập web của người dùng (UTC+7, do JavaScript tính trong trình duyệt)
-  ② Dòng cuối trang: "Dữ liệu xuất bản: dd/mm/yyyy HH:MM:SS (GMT+7)"  ← baked-in từ CI
+  ② Dòng cuối trang: "📅 Dữ liệu được xuất bản lúc: dd/mm/yyyy HH:MM:SS (GMT+7) — © Bản quyền thuộc về FTU-Kudo"  ← baked-in từ CI
 
 Chạy:
     python build_pages.py
@@ -73,7 +73,7 @@ BOTTOM_SNIPPET = """\
     text-align:center; padding:8px 0 18px; margin-top:4px;
     font-size:11.5px; color:#888; background:#fafafa; border-top:1px solid #eee;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-  📅&nbsp;Dữ liệu xuất bản:&nbsp;<strong>{published}</strong>&nbsp;(GMT+7)
+  📅&nbsp;Dữ liệu được xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(GMT+7) — © Bản quyền thuộc về FTU-Kudo
 </div>
 
 <script>
