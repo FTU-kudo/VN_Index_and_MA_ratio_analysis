@@ -8,7 +8,7 @@ Bổ sung vào trang:
   ① Thanh điều khiển đầu trang:
        - Ô tick [✓] MA10  [✓] MA20  [✓] MA50  [✓] MA200  (click để ẩn/hiện từng đường)
        - Giờ truy cập web của người dùng (UTC+7, do JavaScript tính trong trình duyệt)
-  ② Dòng cuối trang: "📅 Dữ liệu xuất bản lúc: dd/mm/yyyy HH:MM:SS (GMT+7) — © Bản quyền thuộc về FTU-Kudo"
+  ② Dòng cuối trang: "📅 Dữ liệu được xuất bản lúc: dd/mm/yyyy HH:MM:SS (GMT+7) — © Bản quyền thuộc về FTU-Kudo"
 
 Chạy:
     python build_pages.py
@@ -24,13 +24,13 @@ DEST = Path("docs/index.html")
 VN   = timezone(timedelta(hours=7))
 
 
-# ── Style để trang vừa vặn màn hình ────────────────────────────────────────
+# ── Style để trang vừa vặn màn hình, footer luôn hiển thị ────────────────
 STYLE_BLOCK = """\
 <style>
   html, body {
     margin: 0;
     padding: 0;
-    height: 100%;
+    height: 100vh;
     overflow: hidden;
   }
   body {
@@ -42,6 +42,7 @@ STYLE_BLOCK = """\
   }
   .vn-footer {
     flex-shrink: 0;
+    flex-grow: 0;
   }
   .js-plotly-plot {
     flex: 1;
@@ -86,7 +87,7 @@ TOP_BAR = """\
 
   <!-- Giờ truy cập -->
   <div style="color:#555; font-size:12.5px; white-space:nowrap;">
-    🕐&nbsp;Đã truy cập lúc:&nbsp;<strong><span id="vn-access-time">–</span></strong>
+    🕐&nbsp;Bạn truy cập lúc:&nbsp;<strong><span id="vn-access-time">–</span></strong>
   </div>
 
 </div>
@@ -99,7 +100,7 @@ BOTTOM_SNIPPET = """\
     text-align:center; padding:8px 0 18px; margin-top:4px;
     font-size:11.5px; color:#888; background:#fafafa; border-top:1px solid #eee;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-  📅&nbsp;Dữ liệu xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(UTC+7) — © Bản quyền thuộc về FTU-Kudo
+  📅&nbsp;Dữ liệu được xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(GMT+7) — © Bản quyền thuộc về FTU-Kudo
 </div>
 
 <script>
@@ -111,7 +112,7 @@ BOTTOM_SNIPPET = """\
     var p  = function (n) { return ('0' + n).slice(-2); };
     return p(v.getDate()) + '/' + p(v.getMonth() + 1) + '/' + v.getFullYear()
          + ' ' + p(v.getHours()) + ':' + p(v.getMinutes()) + ':' + p(v.getSeconds())
-         + ' (UTC+7)';
+         + ' (GMT+7)';
   }
   var el = document.getElementById('vn-access-time');
   if (el) el.textContent = toVN(new Date());
@@ -130,14 +131,13 @@ BOTTOM_SNIPPET = """\
 
   function bindCheckboxes(gdiv) {
     console.log('✅ Đã tìm thấy biểu đồ, bắt đầu gắn sự kiện.');
-    // In danh sách trace để debug
     console.log('📊 Danh sách trace names:');
     if (gdiv.data && gdiv.data.length > 0) {
       (gdiv.data).forEach(function (trace, i) {
         console.log('  ' + i + ': ' + (trace.name || '(không tên)'));
       });
     } else {
-      console.warn('⚠️ Biểu đồ không có dữ liệu (gdiv.data rỗng hoặc undefined)');
+      console.warn('⚠️ Biểu đồ không có dữ liệu');
     }
 
     MA_MAP.forEach(function (ma) {
@@ -155,21 +155,12 @@ BOTTOM_SNIPPET = """\
           return;
         }
 
-        // Lấy danh sách tất cả tên trace để debug
-        var traceNames = [];
-        (gdiv.data || []).forEach(function (trace, i) {
-          traceNames.push(i + ': ' + (trace.name || ''));
-        });
-        console.log('📌 Tất cả trace names hiện tại:', traceNames);
-
-        // Tìm các trace có tên chứa từ khóa (không phân biệt hoa thường)
+        // SỬA LỖI: dùng regex với word boundary để chỉ match đúng từ khóa
+        var regex = new RegExp('\\\\b' + ma.kw + '\\\\b', 'i');
         var indices = [];
         (gdiv.data || []).forEach(function (trace, i) {
-          if (trace.name) {
-            var nameLower = trace.name.toLowerCase();
-            if (nameLower.indexOf(ma.kw) !== -1) {
-              indices.push(i);
-            }
+          if (trace.name && regex.test(trace.name)) {
+            indices.push(i);
           }
         });
 
@@ -187,7 +178,6 @@ BOTTOM_SNIPPET = """\
   /* Poll để đợi Plotly render */
   var tries = 0;
   var timer = setInterval(function () {
-    // Thử nhiều selector để tìm biểu đồ
     var gd = document.querySelector('.js-plotly-plot') || document.querySelector('div.plotly-graph-div') || document.querySelector('.plotly');
     if (gd && gd.data && gd.data.length > 0) {
       clearInterval(timer);
