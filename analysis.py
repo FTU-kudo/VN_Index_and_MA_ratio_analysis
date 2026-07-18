@@ -175,7 +175,7 @@ def get_vnindex(start_date, end_date):
         return pd.DataFrame()
 
 def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file, plot_start_date="2021-06-25"):
-    title = f"Market Breadth: VN-Index and the Ratio of Stocks Trading Above {ma_label}"
+    title = f"📊 Market Breadth: VN-Index and the Ratio of Stocks Trading Above {ma_label}"
     print(f"Vẽ biểu đồ và lưu ra file HTML/PDF: {output_file}...")
     # Kết hợp dữ liệu
     df = pd.merge(vnindex_df, daily_stats, on='time', how='inner')
