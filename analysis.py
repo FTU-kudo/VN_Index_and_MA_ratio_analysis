@@ -190,7 +190,7 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
     # Vẽ VNINDEX (line mầu tím)
     fig.add_trace(
         plotly_go.Scatter(
-            x=df['time'], y=df['VNINDEX'], name="VNINDEX (điểm, cột trái)",
+            x=df['time'], y=df['VNINDEX'], name="VN-Index (Pts, left axis)",
             line=dict(color='purple', width=2)
         ),
         secondary_y=False,
@@ -199,7 +199,7 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
     colors = {
         'pct_MA10': 'cyan',
         'pct_MA20': 'red',
-        'pct_MA50': 'green',
+        'pct_MA50': 'forestgreen',
         'pct_MA200': 'orange'
     }
     
@@ -213,7 +213,7 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
     for ma in ma_lines:
         fig.add_trace(
             plotly_go.Scatter(
-                x=df['time'], y=df[ma], name=f"Tỷ lệ mã > {names[ma]} (%, cột phải)",
+                x=df['time'], y=df[ma], name=f"Percentage of Stocks > {names[ma]} (%, right axis)",
                 line=dict(color=colors[ma], width=1)
             ),
             secondary_y=True,
@@ -231,14 +231,14 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
             xanchor="center",
             x=0.5
         ),
-        xaxis_title="Thời gian",
+        xaxis_title="Timeline",
         hovermode="x unified",
         template="plotly_white",
         margin=dict(l=50, r=50, t=80, b=150)
     )
 
     # Tùy chỉnh các trục
-    fig.update_yaxes(title_text="VN-Index (điểm)", secondary_y=False, showgrid=False)
+    fig.update_yaxes(title_text="VN-Index (Index Points)", secondary_y=False, showgrid=False)
     fig.update_yaxes(title_text="Tỷ lệ (%)", secondary_y=True, range=[0, 100], ticksuffix="%", showgrid=True, gridcolor="gray", gridwidth=0.5, griddash="dot")
 
     # Tạo thư mục đầu ra
