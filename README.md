@@ -1,6 +1,6 @@
 # 📊 VN-Index & MA Ratio Analysis
 
-> Tự động phân tích tương quan giữa VN-Index và tỷ lệ cổ phiếu vượt các đường trung bình động (MA10/20/50/200) trên sàn HOSE — cập nhật hàng tuần, gửi báo cáo PDF qua email tự động.
+> Tự động phân tích tương quan giữa VN-Index và tỷ lệ cổ phiếu vượt các đường trung bình động (MA10/20/50/200) trên sàn HOSE — cập nhật hàng tuần, gửi báo cáo PDF qua email tự động. Thử giao diện HTML trực quan [tại đây](https://ftu-kudo.github.io/VN_Index_and_MA_ratio_analysis/).
 
 ## Giới thiệu
 
