@@ -9,7 +9,7 @@ Adds:
   ② Top control bar:
        - Checkboxes to show/hide MA10 / MA20 / MA50 / MA200
        - User access time (UTC+7, computed in browser via JavaScript)
-  ③ Footer: "Data published at: ... (UTC+7) — © FTU-Kudo"
+  ③ Footer: "📅 Data published at: ... (UTC+7) — © FTU-Kudo"
 
 Usage:
     python build_pages.py
