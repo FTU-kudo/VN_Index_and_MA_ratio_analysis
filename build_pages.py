@@ -11,7 +11,7 @@ Bổ sung vào trang:
   ② Dòng cuối trang: "📅 Dữ liệu được xuất bản lúc: dd/mm/yyyy HH:MM:SS (UTC+7) — © Bản quyền thuộc về FTU-Kudo"
 
 Chạy:
-    python build_pages.py
+    python build_pages.py → tự deploy web
 """
 
 import re
