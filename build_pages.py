@@ -62,7 +62,7 @@ TOP_BAR = """\
 
   <!-- MA checkboxes -->
   <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
-    <span style="font-weight:600; color:#333;">✅ Show MA lines:</span>
+    <span style="font-weight:600; color:#333;">&#x2705; ✅ Show MA lines:</span>
 
     <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;">
       <input type="checkbox" id="cb-ma10"  checked
@@ -91,7 +91,7 @@ TOP_BAR = """\
 
   <!-- Access time -->
   <div style="color:#555; font-size:12.5px; white-space:nowrap;">
-    &#128336;&nbsp;🕐 Accessed at:&nbsp;<strong><span id="vn-access-time">&#8211;</span></strong>
+    &#128336;&nbsp;&#x1F550; 🕐 Accessed at:&nbsp;<strong><span id="vn-access-time">&#8211;</span></strong>
   </div>
 
 </div>
@@ -99,15 +99,18 @@ TOP_BAR = """\
 
 
 # ── ② Footer + JavaScript (inserted before </body>) ───────────────────────
-# Uses {published} placeholder — replaced via .replace(), NOT .format(),
+# NOTE: {published} is replaced via str.replace(), NOT .format(),
 # so JavaScript curly braces need no escaping.
+#
+# IMPORTANT: This string is passed to re.sub() via a lambda (not directly),
+# so sequences like \d from JavaScript will NOT trigger re.error.
 BOTTOM_SNIPPET = """\
 <!-- ── Injected by build_pages.py ── -->
 <div class="vn-footer" style="
     text-align:center; padding:8px 0 18px; margin-top:4px;
     font-size:11.5px; color:#888; background:#fafafa; border-top:1px solid #eee;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-  &#128197;&nbsp;📅 Data published at:&nbsp;<strong>{published}</strong>&nbsp;(UTC+7)
+  &#128197;&nbsp;&#x1F4C5; 📅 Data published at:&nbsp;<strong>{published}</strong>&nbsp;(UTC+7)
   &nbsp;&mdash;&nbsp;&#169;&nbsp;FTU-Kudo
 </div>
 
@@ -147,8 +150,8 @@ BOTTOM_SNIPPET = """\
       var name  = trace.name.toUpperCase();
       var pos   = name.indexOf(kw);
       if (pos === -1) return;
-      var after = name[pos + kw.length];          // char right after the keyword
-      if (!after || !/\d/.test(after)) {          // not followed by a digit → exact match
+      var after = name[pos + kw.length];
+      if (!after || !/\d/.test(after)) {
         indices.push(i);
       }
     });
@@ -159,7 +162,6 @@ BOTTOM_SNIPPET = """\
     MA_MAP.forEach(function (ma) {
       var cb = document.getElementById(ma.id);
       if (!cb) return;
-
       cb.addEventListener('change', function () {
         if (typeof Plotly === 'undefined') return;
         var indices = findTraceIndices(gdiv, ma.kw);
@@ -198,27 +200,36 @@ def main():
     if re.search(r"<title>", html, re.IGNORECASE):
         html = re.sub(
             r"<title>[^<]*</title>",
-            f"<title>{PAGE_TITLE}</title>",
+            lambda m: f"<title>{PAGE_TITLE}</title>",    # lambda: tránh re xử lý replacement
             html, count=1, flags=re.IGNORECASE,
         )
     else:
         html = re.sub(
             r"(<head[^>]*>)",
-            rf"\1\n  <title>{PAGE_TITLE}</title>",
+            lambda m: m.group(1) + f"\n  <title>{PAGE_TITLE}</title>",
             html, count=1, flags=re.IGNORECASE,
         )
 
     # 1. Insert STYLE + TOP_BAR + open #main-content right after <body ...>
+    # ── FIX: dùng lambda thay vì string trực tiếp ──────────────────────────
+    # re.sub() xử lý replacement string như regex template (\1, \d, \n …),
+    # lambda trả về string thuần → tránh hoàn toàn mọi bad-escape error.
+    inject_top = STYLE_BLOCK + TOP_BAR + '<div id="main-content">'
     html = re.sub(
         r"(<body[^>]*>)",
-        r"\1\n" + STYLE_BLOCK + TOP_BAR + '<div id="main-content">',
+        lambda m: m.group(1) + "\n" + inject_top,        # lambda ← FIX
         html, count=1, flags=re.IGNORECASE,
     )
 
-    # 2. Close #main-content, then insert footer + script before </body>
+    # 2. Close #main-content, insert footer + script before </body>
+    # ── FIX: lambda tránh \d trong JS bị re.sub hiểu nhầm ─────────────────
     bottom = "</div>\n" + BOTTOM_SNIPPET.replace("{published}", published)
     if re.search(r"</body>", html, re.IGNORECASE):
-        html = re.sub(r"</body>", bottom, html, count=1, flags=re.IGNORECASE)
+        html = re.sub(
+            r"</body>",
+            lambda m: bottom,                             # lambda ← FIX
+            html, count=1, flags=re.IGNORECASE,
+        )
     else:
         html += "\n" + bottom.replace("</body>", "")
 
