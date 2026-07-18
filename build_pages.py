@@ -3,7 +3,7 @@ build_pages.py
 ==============
 Post-processes output/market_breadth_chart.html → docs/index.html
 for GitHub Pages deployment.
-  
+
 Adds:
   ① Browser tab title
   ② Top control bar:
@@ -91,7 +91,7 @@ TOP_BAR = """\
 
   <!-- Access time -->
   <div style="color:#555; font-size:12.5px; white-space:nowrap;">
-    &#128336;&nbsp;&#x1F550; Accessed at:&nbsp;<strong><span id="vn-access-time">&#8211;</span></strong>
+    &#128336;&nbsp;Accessed at:&nbsp;<strong><span id="vn-access-time">&#8211;</span></strong>
   </div>
 
 </div>
@@ -110,7 +110,7 @@ BOTTOM_SNIPPET = """\
     text-align:center; padding:8px 0 18px; margin-top:4px;
     font-size:11.5px; color:#888; background:#fafafa; border-top:1px solid #eee;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-  &#128197;&nbsp;&#x1F4C5; Data published at:&nbsp;<strong>{published}</strong>&nbsp;(UTC+7)
+  &#128197;&nbsp;Data published at:&nbsp;<strong>{published}</strong>&nbsp;(UTC+7)
   &nbsp;&mdash;&nbsp;&#169;&nbsp;FTU-Kudo
 </div>
 
