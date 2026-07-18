@@ -8,10 +8,10 @@ Bổ sung vào trang:
   ① Thanh điều khiển đầu trang:
        - Ô tick [✓] MA10  [✓] MA20  [✓] MA50  [✓] MA200  (click để ẩn/hiện từng đường)
        - Giờ truy cập web của người dùng (UTC+7, do JavaScript tính trong trình duyệt)
-  ② Dòng cuối trang: "📅 Dữ liệu được xuất bản lúc: dd/mm/yyyy HH:MM:SS (UTC+7) — © Bản quyền thuộc về FTU-Kudo"
+  ② Dòng cuối trang: "📅 Dữ liệu được xuất bản lúc: dd/mm/yyyy HH:MM:SS (GMT+7) — © Bản quyền thuộc về FTU-Kudo"
 
 Chạy:
-    python build_pages.py → tự deploy web
+    python build_pages.py
 """
 
 import re
@@ -106,7 +106,7 @@ BOTTOM_SNIPPET = """\
     text-align:center; padding:8px 0 18px; margin-top:4px;
     font-size:11.5px; color:#888; background:#fafafa; border-top:1px solid #eee;
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-  📅&nbsp;Dữ liệu được xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(UTC+7) — © Bản quyền thuộc về FTU-Kudo
+  📅&nbsp;Dữ liệu được xuất bản lúc:&nbsp;<strong>{published}</strong>&nbsp;(GMT+7) — © Bản quyền thuộc về FTU-Kudo
 </div>
 
 <script>
@@ -118,7 +118,7 @@ BOTTOM_SNIPPET = """\
     var p  = function (n) { return ('0' + n).slice(-2); };
     return p(v.getDate()) + '/' + p(v.getMonth() + 1) + '/' + v.getFullYear()
          + ' ' + p(v.getHours()) + ':' + p(v.getMinutes()) + ':' + p(v.getSeconds())
-         + ' (UTC+7)';
+         + ' (GMT+7)';
   }
   var el = document.getElementById('vn-access-time');
   if (el) el.textContent = toVN(new Date());
@@ -162,6 +162,7 @@ BOTTOM_SNIPPET = """\
         }
 
         // SỬA LỖI: dùng regex với word boundary (\\b) để chỉ match đúng từ khóa
+        // Python string: 8 dấu backslash -> JS nhận được '\\b' + kw + '\\b'
         var regex = new RegExp('\\\\\\\\b' + ma.kw + '\\\\\\\\b', 'i');
         var indices = [];
         (gdiv.data || []).forEach(function (trace, i) {
@@ -201,17 +202,6 @@ BOTTOM_SNIPPET = """\
 </body>"""
 
 
-def set_title(html, title):
-    """Thay đổi hoặc chèn thẻ <title> vào phần <head> của HTML."""
-    # Nếu đã có <title> thì thay thế nội dung
-    if re.search(r"<title>.*?</title>", html, re.IGNORECASE):
-        html = re.sub(r"<title>.*?</title>", f"<title>{title}</title>", html, flags=re.IGNORECASE)
-    else:
-        # Nếu chưa có, chèn ngay sau thẻ <head>
-        html = re.sub(r"(<head[^>]*>)", r"\1\n<title>" + title + "</title>", html, flags=re.IGNORECASE)
-    return html
-
-
 def main():
     if not SRC.exists():
         print(f"LỖI: {SRC} chưa tồn tại — hãy chạy `python analysis.py --build` trước.")
@@ -219,9 +209,6 @@ def main():
 
     published = datetime.now(VN).strftime("%d/%m/%Y %H:%M:%S")
     html      = SRC.read_text(encoding="utf-8")
-
-    # Đặt tiêu đề cho trang
-    html = set_title(html, "Market Breadth: VN-Index & MA Ratio Analysis")
 
     # 1. Chèn STYLE_BLOCK, TOP_BAR và mở div#main-content ngay sau thẻ <body>
     html = re.sub(
@@ -241,7 +228,7 @@ def main():
 
     DEST.parent.mkdir(parents=True, exist_ok=True)
     DEST.write_text(html, encoding="utf-8")
-    print(f"✅  docs/index.html đã tạo  —  xuất bản: {published} (UTC+7)")
+    print(f"✅  docs/index.html đã tạo  —  xuất bản: {published} (GMT+7)")
 
 
 if __name__ == "__main__":
