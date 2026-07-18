@@ -239,7 +239,7 @@ def plot_market_breadth(daily_stats, vnindex_df, ma_lines, ma_label, output_file
 
     # Tùy chỉnh các trục
     fig.update_yaxes(title_text="VN-Index (Index Points)", secondary_y=False, showgrid=False)
-    fig.update_yaxes(title_text="Tỷ lệ (%)", secondary_y=True, range=[0, 100], ticksuffix="%", showgrid=True, gridcolor="gray", gridwidth=0.5, griddash="dot")
+    fig.update_yaxes(title_text="Percentage (%)", secondary_y=True, range=[0, 100], ticksuffix="%", showgrid=True, gridcolor="gray", gridwidth=0.5, griddash="dot")
 
     # Tạo thư mục đầu ra
     os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
