@@ -196,19 +196,28 @@ def main():
     published = datetime.now(VN).strftime("%d/%m/%Y %H:%M:%S")
     html      = SRC.read_text(encoding="utf-8")
 
-    # 0. Update (or add) <title> tag
-    if re.search(r"<title>", html, re.IGNORECASE):
+    # 0. Set browser tab title — robust 3-step approach:
+    #    0a. Remove any existing <title> (re.DOTALL handles emoji/newlines inside it).
+    #    0b. Insert new title just before </head> — position Chrome always reads.
+    #    0c/0d. Fallbacks when HTML has no </head>.
+    title_tag = f"<title>{PAGE_TITLE}</title>"
+    html = re.sub(r"<title>.*?</title>", "", html, count=1,
+                  flags=re.IGNORECASE | re.DOTALL)           # 0a: remove old title
+
+    if re.search(r"</head>", html, re.IGNORECASE):           # 0b: normal Plotly HTML
         html = re.sub(
-            r"<title>[^<]*</title>",
-            lambda m: f"<title>{PAGE_TITLE}</title>",    # lambda: tránh re xử lý replacement
+            r"</head>",
+            lambda m: f"  {title_tag}\n</head>",
             html, count=1, flags=re.IGNORECASE,
         )
-    else:
+    elif re.search(r"<head[^>]*>", html, re.IGNORECASE):    # 0c: no </head>
         html = re.sub(
             r"(<head[^>]*>)",
-            lambda m: m.group(1) + f"\n  <title>{PAGE_TITLE}</title>",
+            lambda m: m.group(1) + f"\n  {title_tag}",
             html, count=1, flags=re.IGNORECASE,
         )
+    else:                                                     # 0d: no <head> at all
+        html = f"<head>{title_tag}</head>\n" + html
 
     # 1. Insert STYLE + TOP_BAR + open #main-content right after <body ...>
     # ── FIX: dùng lambda thay vì string trực tiếp ──────────────────────────
