@@ -1,68 +1,79 @@
-# 📊 VN-Index & MA Ratio Analysis
+# 📊 VN-Index & Market Breadth Analysis
 
-> Tự động phân tích tương quan giữa VN-Index và tỷ lệ cổ phiếu vượt các đường trung bình động (MA10/20/50/200) trên sàn HOSE — cập nhật hàng tuần, gửi báo cáo PDF qua email tự động. Thử giao diện HTML trực quan [tại đây](https://ftu-kudo.github.io/VN_Index_and_MA_ratio_analysis/).
+> Automated analysis of the correlation between VN-Index and the percentage of HOSE-listed stocks trading above their moving averages (MA10/20/50/200) — updated daily, with PDF reports delivered via email and an interactive dashboard hosted on GitHub Pages.
 
-## Giới thiệu
+**[→ View live dashboard](https://ftu-kudo.github.io/VN_Index_and_MA_ratio_analysis/)**
 
-Project theo dõi **"market breadth"** (độ rộng thị trường) của HOSE:
+## Overview
 
-1. Lấy dữ liệu giá lịch sử của toàn bộ ~400 mã cổ phiếu niêm yết trên HOSE qua [vnstock](https://github.com/thinh-vu/vnstock)
-2. Tính các đường MA10, MA20, MA50, MA200 cho từng mã
-3. Tính tỷ lệ % số mã đang giao dịch **trên** mỗi đường MA tại từng thời điểm
-4. Vẽ biểu đồ tương quan giữa VN-Index và các tỷ lệ này (Plotly, xuất HTML tương tác + PDF)
-5. Tự động gửi báo cáo PDF qua email hàng tuần
+This project tracks **market breadth** across the Ho Chi Minh Stock Exchange (HOSE):
 
-## 🖼️ Output mẫu
+1. Fetches historical OHLC price data for all ~400 HOSE-listed stocks via [vnstock](https://github.com/thinh-vu/vnstock)
+2. Computes MA10, MA20, MA50, and MA200 for each stock
+3. Calculates the daily percentage of stocks trading **above** each moving average
+4. Plots the correlation between VN-Index and these ratios (Plotly — interactive HTML + PDF export)
+5. Publishes an interactive chart to GitHub Pages (updated daily)
+6. Sends PDF reports automatically via email
 
-<img width="1466" height="987" alt="image" src="https://github.com/user-attachments/assets/fcd8f7bc-86b2-4b63-994b-630bfb13adbd" />
+## 🖼️ Sample Output
 
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/d025a209-3bf8-400e-94c3-44bbc19d67f2" />
 
-## 🏗️ Kiến trúc
+## 🏗️ Architecture
 
 ```
-vnstock API → pandas (tính MA & tỷ lệ %) → Plotly (vẽ chart HTML/PDF) → Gmail SMTP (gửi email)
-                                                      │
-                              GitHub Actions: job "build" → job "send_email"
-                                                      │
-              cron-job.org ──(POST /repos/.../dispatches)──► mỗi Chủ nhật 20:00 GMT+7
+vnstock API → pandas (MA calculation & breadth ratios) → Plotly (HTML/PDF charts)
+                                    │
+                    ┌───────────────┴────────────────┐
+                    │                                │
+             GitHub Actions                   build_pages.py
+          job "build" → job "send_email"      → docs/index.html
+                    │                                │
+     cron-job.org ──(POST repository_dispatch)──►  GitHub Pages
+        every weekday at 16:15 ICT (Mon–Fri)    (live dashboard)
 ```
 
-Pipeline tách thành 2 bước độc lập, có thể chạy riêng hoặc nối tiếp:
+The pipeline is split into two independent, composable steps:
 
 ```bash
-python analysis.py --build         # tải dữ liệu, tính toán, vẽ biểu đồ
-python analysis.py --send-email    # gửi email với PDF đã build
+python analysis.py --build        # fetch data, compute MA ratios, generate charts
+python analysis.py --send-email   # send existing PDFs via email
+python build_pages.py             # post-process HTML → docs/index.html for GitHub Pages
 ```
 
-**Vì sao dùng cron-job.org** thay vì `schedule:` có sẵn của GitHub Actions? GitHub có thể delay hoặc bỏ qua scheduled job (đặc biệt với repo ít hoạt động). Dùng dịch vụ cron ngoài gọi GitHub Dispatches API (`repository_dispatch`) đảm bảo workflow được kích hoạt đúng giờ.
+**Why cron-job.org instead of GitHub Actions `schedule:`?**
+GitHub may delay or silently skip scheduled jobs on low-activity repositories. An external cron service calling the GitHub Dispatches API (`repository_dispatch`) guarantees the workflow fires on time.
 
-**Vì sao cache bằng GitHub Actions cache, không commit CSV vào git?** Dữ liệu OHLC (`hose_6years_data.csv`, ~20MB+) cần tồn tại giữa các lần chạy để chỉ tải bổ sung phần dữ liệu mới (incremental fetch) thay vì tải lại toàn bộ 6 năm mỗi tuần (~20 phút) — nhưng commit file này vào git sẽ làm phình lịch sử repo theo thời gian. `actions/cache` giải quyết được cả hai: vừa giữ tốc độ, vừa giữ repo sạch.
+**Why cache OHLC data with GitHub Actions cache instead of committing the CSV?**
+`hose_6years_data.csv` grows to 20 MB+ over time. Committing it directly would bloat the repository history indefinitely. `actions/cache` keeps incremental fetches fast (only new trading days are downloaded on each run) while keeping the repo clean.
 
-## ⚙️ Cài đặt & chạy local
+## ⚙️ Local Setup
 
 ```bash
 git clone https://github.com/FTU-kudo/VN_Index_and_MA_ratio_analysis.git
 cd VN_Index_and_MA_ratio_analysis
 pip install -r requirements.txt
-cp .env.example .env   # điền VNSTOCK_API_KEY / Gmail App Password của bạn
-python analysis.py     # chạy full: build + gửi email
+cp .env.example .env          # fill in VNSTOCK_API_KEY and Gmail App Password
+python analysis.py            # run full pipeline: build + send email
 ```
 
-## 📁 Cấu trúc thư mục
+## 📁 Project Structure
 
-| Đường dẫn | Nội dung |
-|---|---|
-| `analysis.py` | Script chính: tải data, tính MA & market breadth, vẽ chart, gửi email |
-| `.github/workflows/` | GitHub Actions workflow (job `build` + job `send_email`) |
-| `notebooks/` | Notebook khám phá dữ liệu / thử nghiệm thư viện vnstock |
-| `test_*.py` | Script thử nhanh các API của vnstock trong lúc dev (không phải unit test chính thức) |
-| `docs/`, `AGENTS.md`, `CLAUDE.md`, `.agents/` | Tài liệu vendor từ [vnstock-agent-guide](https://github.com/vnstock-hq/vnstock-agent-guide) — giúp AI coding agent (Claude, Copilot, Cursor...) dùng đúng API của thư viện vnstock khi hỗ trợ code. **Không phải tài liệu mô tả project này.** |
+| Path | Description |
+|------|-------------|
+| `analysis.py` | Core script: data fetching, MA & breadth calculation, charting, email delivery |
+| `build_pages.py` | Post-processes `output/market_breadth_chart.html` → `docs/index.html` for GitHub Pages (adds MA toggle controls, access timestamp, publication timestamp) |
+| `.github/workflows/` | GitHub Actions workflow — `build` job followed by `send_email` job |
+| `output/` | Generated chart files (HTML + PDF); committed by CI on each run |
+| `docs/` | GitHub Pages deployment target (`index.html` generated by `build_pages.py`) |
+| `notebooks/` | Exploratory notebooks for data analysis and vnstock API experiments |
+| `test_*.py` | Quick API tests used during development (not formal unit tests) |
+| `AGENTS.md`, `CLAUDE.md`, `.agents/` | Vendor documentation from [vnstock-agent-guide](https://github.com/vnstock-hq/vnstock-agent-guide) — helps AI coding assistants (Claude, Copilot, Cursor…) use the vnstock library correctly. **Not documentation for this project.** |
 
-## 🛠️ Công nghệ sử dụng
+## 🛠️ Tech Stack
 
-`Python` · `pandas` · `vnstock` · `Plotly` + `kaleido` (xuất PDF) · `GitHub Actions` · `cron-job.org` · `Gmail SMTP`
+`Python` · `HTML` · `pandas` · `vnstock` · `Plotly` + `kaleido` (PDF export) · `GitHub Actions` · `cron-job.org` · `Gmail SMTP` · `GitHub Pages`
 
 ## 📄 License
 
-Apache License 2.0 — xem chi tiết tại [LICENSE](./LICENSE)
-
+Apache License 2.0 — see [LICENSE](./LICENSE) for details.
