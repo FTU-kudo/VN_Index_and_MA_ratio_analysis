@@ -3,3 +3,6 @@ vnstock
 plotly
 python-dotenv
 kaleido
+--extra-index-url https://vnstocks.com/api/simple
+vnstock
+vnai
