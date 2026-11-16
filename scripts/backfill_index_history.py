@@ -5,6 +5,10 @@ Vì sao cần: endpoint Yuanta `index_transaction/{code}` chỉ có phiên gần
 được nạp từ nguồn khác một lần; sau đó workflow tự tích luỹ mỗi ngày.
 
 Cách dùng
+  # 0) KHUYÊN DÙNG - từ chính API TradingView của Yuanta (toàn bộ lịch sử từ 2010, mọi chỉ số, 1 request/chỉ số).
+  #    Workflow tự làm việc này mỗi ngày; chỉ cần chạy tay nếu GitHub runner bị chặn:
+  python scripts/backfill_index_history.py --source yuanta
+
   # 1) Từ vnstock (Unified UI: Market().index(code).ohlcv) - cần VNSTOCK_API_KEY trong .env nếu có
   python scripts/backfill_index_history.py --source vnstock --start 2020-06-25
 
@@ -86,13 +90,19 @@ def from_csv(path: str) -> pd.DataFrame:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--source", choices=["vnstock", "csv"], required=True)
+    ap.add_argument("--source", choices=["yuanta", "vnstock", "csv"], required=True)
     ap.add_argument("--csv")
     ap.add_argument("--start", default="2020-06-25")
     ap.add_argument("--end", default=datetime.now().strftime("%Y-%m-%d"))
     args = ap.parse_args()
 
     codes = sorted({group_index_code(g) for g in INDEX_GROUPS})
+    if args.source == "yuanta":
+        from yuanta_client import YuantaClient
+        store = IndexStore()
+        store.update_from_history(YuantaClient(), codes, full_from=args.start if args.start != "2020-06-25" else "2010-01-01", force_full=True)
+        print(f"Kho hiện có {len(store.df)} dòng, {store.df['code'].nunique()} chỉ số -> {store.path}")
+        return
     rows = from_vnstock(codes, args.start, args.end) if args.source == "vnstock" else from_csv(args.csv)
     if rows.empty:
         raise SystemExit("Không nạp được dòng nào.")
