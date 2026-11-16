@@ -28,11 +28,25 @@ except ImportError:
     pass
 
 
-def get_hose_symbols(client: YuantaClient | None = None, symbols_file: str = "hose_symbols.txt"):
+def _load_symbols_file(path: str):
+    if not os.path.exists(path):
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        raw = [line.strip().upper() for line in f if line.strip() and not line.startswith("#")]
+    return sorted({s for s in raw if len(s) == 3 and s.isalpha()})
+
+
+def get_hose_symbols(
+    client: YuantaClient | None = None,
+    symbols_file: str = "hose_symbols.txt",
+    cache_csv: str = "hose_6years_data.csv",
+):
     """
-    Lấy danh sách ~400 cổ phiếu HOSE hợp lệ (3 ký tự chữ cái viết hoa).
-    Ưu tiên lấy trực tiếp từ Yuanta API (`HOSE` / `VNALL`), sau đó mới fallback
-    sang `hose_symbols.txt` hoặc `FALLBACK_HOSE_SYMBOLS`.
+    Lấy danh sách cổ phiếu HOSE hợp lệ (3 ký tự chữ cái viết hoa). Thứ tự ưu tiên:
+      1. Yuanta API (list_stock_info?exchange=HSX)  -> thành công thì lưu lại vào hose_symbols.txt
+      2. hose_symbols.txt (snapshot của lần chạy thành công gần nhất)
+      3. Các mã đang có trong cache CSV (tránh tụt từ ~400 mã xuống 60 mã khi API danh sách lỗi)
+      4. FALLBACK_HOSE_SYMBOLS (60 mã thanh khoản cao)
     """
     print("Bước 1: Lấy danh sách cổ phiếu HOSE...")
     if client is not None:
@@ -40,18 +54,53 @@ def get_hose_symbols(client: YuantaClient | None = None, symbols_file: str = "ho
             symbols = client.get_index_symbols(code)
             if symbols:
                 print(f"Đã lấy {len(symbols)} mã HOSE từ Yuanta API (index_code={code}).")
+                if code == "HOSE":
+                    try:
+                        with open(symbols_file, "w", encoding="utf-8") as f:
+                            f.write(f"# Auto-generated {datetime.now(ZoneInfo('Asia/Ho_Chi_Minh')):%Y-%m-%d} from Yuanta list_stock_info?exchange=HSX\n")
+                            f.write("\n".join(symbols) + "\n")
+                    except OSError as e:
+                        print("Không ghi được hose_symbols.txt:", e)
                 return symbols
 
-    if os.path.exists(symbols_file):
-        with open(symbols_file, "r", encoding="utf-8") as f:
-            raw = [line.strip().upper() for line in f if line.strip() and not line.startswith("#")]
-        symbols = sorted({s for s in raw if len(s) == 3 and s.isalpha()})
-        if symbols:
-            print(f"Đã nạp {len(symbols)} mã HOSE từ {symbols_file}.")
-            return symbols
+    symbols = _load_symbols_file(symbols_file)
+    if symbols:
+        print(f"[CẢNH BÁO] API danh sách mã lỗi -> dùng {len(symbols)} mã từ {symbols_file}.")
+        return symbols
 
-    print(f"Sử dụng danh sách mặc định ({len(FALLBACK_HOSE_SYMBOLS)} mã HOSE thanh khoản cao).")
+    if os.path.exists(cache_csv):
+        try:
+            cached = pd.read_csv(cache_csv, usecols=["symbol"])
+            symbols = sorted({str(s).upper() for s in cached["symbol"].dropna().unique() if len(str(s)) == 3 and str(s).isalpha()})
+            if symbols:
+                print(f"[CẢNH BÁO] API danh sách mã lỗi -> dùng {len(symbols)} mã đang có trong cache CSV.")
+                return symbols
+        except Exception as e:
+            print("Không đọc được symbol từ cache CSV:", e)
+
+    print(f"[CẢNH BÁO] Sử dụng danh sách mặc định ({len(FALLBACK_HOSE_SYMBOLS)} mã HOSE thanh khoản cao).")
     return sorted(FALLBACK_HOSE_SYMBOLS)
+
+
+def _align_price_units(cached_df: pd.DataFrame, new_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Cache cũ (thời vnstock) lưu giá theo nghìn VND (vd 20.45), API Yuanta trả VND (20450).
+    Nếu để lẫn, MA200 sẽ sai hoàn toàn. So sánh phần ngày chồng lấn; nếu lệch ~1000 lần thì nhân cache lên 1000.
+    """
+    m = cached_df[["symbol", "time", "close"]].merge(
+        new_df[["symbol", "time", "close"]], on=["symbol", "time"], suffixes=("_old", "_new")
+    )
+    m = m[(m["close_old"] > 0) & (m["close_new"] > 0)]
+    if m.empty:
+        return cached_df
+    ratio = float((m["close_new"] / m["close_old"]).median())
+    if 900 <= ratio <= 1100:
+        print(f"[CẢNH BÁO] Cache lưu giá theo nghìn VND (tỷ lệ API/cache ≈ {ratio:.0f}). Đã nhân cache x1000 để đồng nhất đơn vị.")
+        cached_df = cached_df.copy()
+        for c in ("open", "high", "low", "close"):
+            if c in cached_df.columns:
+                cached_df[c] = cached_df[c] * 1000.0
+    return cached_df
 
 
 def get_historical_data(client: YuantaClient, symbols, start_date: str, end_date: str, max_workers: int = 5):
@@ -98,14 +147,21 @@ def get_historical_data(client: YuantaClient, symbols, start_date: str, end_date
             if completed % 10 == 0 or completed == total:
                 print(f"Đã tải {completed}/{total} mã cổ phiếu...")
 
+    print(
+        f"Tổng kết tải giá: {len(all_data)}/{total} mã có dữ liệu | "
+        f"request lỗi={client.failed_requests} | JSON rỗng={client.empty_payloads}"
+    )
     if not all_data:
-        print("Không tải được dữ liệu mới từ Yuanta API.")
-        return cached_df if cached_df is not None else pd.DataFrame()
+        # fetch_start luôn lùi 14 ngày so với cache => nếu API hoạt động thì CHẮC CHẮN có dữ liệu mới.
+        # Không có nghĩa là API hỏng -> dừng hẳn, tránh xuất bản biểu đồ cũ như thể là mới.
+        print("LỖI NGHIÊM TRỌNG: Không tải được dữ liệu mới từ Yuanta API (xem các dòng [YuantaClient] phía trên).")
+        sys.exit(1)
 
     new_df = pd.concat(all_data, ignore_index=True)
     new_df["time"] = pd.to_datetime(new_df["time"]).dt.date
 
     if cached_df is not None:
+        cached_df = _align_price_units(cached_df, new_df)
         full_df = pd.concat([cached_df, new_df], ignore_index=True)
     else:
         full_df = new_df
@@ -226,13 +282,19 @@ def export_all_groups_json(
     print(f"Đã xuất dữ liệu các nhóm ngành ra {output_json}")
 
 
+VNINDEX_CANDIDATES = ("VNINDEX", "VN-INDEX", "VNI")
+
+
 def get_vnindex(client: YuantaClient, start_date: str, end_date: str) -> pd.DataFrame:
-    """Lấy dữ liệu chỉ số VNINDEX từ Yuanta API."""
+    """Lấy dữ liệu chỉ số VNINDEX từ Yuanta API (thử lần lượt các mã chỉ số có thể có)."""
     print("Lấy dữ liệu chỉ số VNINDEX từ Yuanta API...")
-    df = client.get_price_history("VNINDEX", start_date, end_date)
-    if df.empty:
-        return pd.DataFrame()
-    return df[["time", "close"]].rename(columns={"close": "VNINDEX"})
+    for code in VNINDEX_CANDIDATES:
+        df = client.get_price_history(code, start_date, end_date)
+        if not df.empty:
+            print(f"  VNINDEX lấy được qua mã '{code}': {len(df)} phiên, đến {df['time'].max()}.")
+            return df[["time", "close"]].rename(columns={"close": "VNINDEX"})
+        print(f"  Mã '{code}' không trả dữ liệu.")
+    return pd.DataFrame()
 
 
 def get_vnindex_foreign(client: YuantaClient, start_date: str, end_date: str) -> pd.DataFrame:
