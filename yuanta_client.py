@@ -142,13 +142,17 @@ class YuantaClient:
 
     def get_index_symbols(self, index_code: str) -> List[str]:
         """
-        Lấy danh sách mã cổ phiếu thuộc một chỉ số hoặc nhóm ngành từ Yuanta API:
-        https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?index_code={INDEX_CODE}
+        Lấy danh sách mã cổ phiếu thuộc một sàn/chỉ số/nhóm ngành từ Yuanta API:
+        - Toàn sàn HOSE (HSX): ?exchange=HSX
+        - Chỉ số / nhóm ngành: ?index_code={INDEX_CODE}
         """
         code = str(index_code).strip().upper()
-        payload = self._get_json(LIST_STOCK_INFO_URL, {"index_code": code})
+        params = {"exchange": "HSX"} if code in ("HOSE", "HSX") else {"index_code": code}
+        payload = self._get_json(LIST_STOCK_INFO_URL, params)
         records = _extract_records(payload)
         if not records:
+            if payload is not None:
+                print(f"[YuantaClient] Không trích xuất được danh sách mã cho {code} (params={params}). Sample: {str(payload)[:200]}")
             return []
 
         symbols: List[str] = []
