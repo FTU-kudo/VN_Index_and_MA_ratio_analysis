@@ -51,7 +51,10 @@ jobs:
             "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?exchange=HSX" \
             "https://ysradarapi.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?exchange=HSX" \
             "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch/price_history/ACB?from_date=2026-11-10&to_date=2026-11-16" \
-            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch/price_history/VNINDEX?from_date=2026-11-10&to_date=2026-11-16"; do
+            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch/price_history/VNINDEX?from_date=2026-11-10&to_date=2026-11-16" \
+            "https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1794000000&to=1794873600&limit=100000" \
+            "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/VNINDEX" \
+            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/VNINDEX"; do
             echo "=== $URL"
             curl -sS -m 20 -A "$UA" -H "Accept: application/json" -o /tmp/body.txt -w "HTTP %{http_code} | %{content_type} | %{size_download} bytes\n" "$URL" || true
             head -c 300 /tmp/body.txt; echo
