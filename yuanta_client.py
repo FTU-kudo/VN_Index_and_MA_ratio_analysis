@@ -260,18 +260,18 @@ class YuantaClient:
         col_map = {}
         lower_cols = {c.lower(): c for c in df.columns}
 
-        date_candidates = ["tradingdate", "trading_date", "date", "time", "datetime"]
+        date_candidates = ["tradingdate", "trading_date", "date", "time", "datetime", "t", "ngay"]
         for cand in date_candidates:
             if cand in lower_cols:
                 col_map[lower_cols[cand]] = "time"
                 break
 
         for target, cands in {
-            "open": ["open", "openprice", "open_price"],
-            "high": ["high", "highprice", "high_price"],
-            "low": ["low", "lowprice", "low_price"],
-            "close": ["close", "closeprice", "close_price", "adjclose", "adj_close"],
-            "volume": ["volume", "totalvolume", "total_volume", "vol", "matchvolume"],
+            "open": ["open", "openprice", "open_price", "o"],
+            "high": ["high", "highprice", "high_price", "h"],
+            "low": ["low", "lowprice", "low_price", "l"],
+            "close": ["close", "closeprice", "close_price", "adjclose", "adj_close", "matchprice", "c"],
+            "volume": ["volume", "totalvolume", "total_volume", "vol", "matchvolume", "totalvol", "v"],
         }.items():
             for cand in cands:
                 if cand in lower_cols:
@@ -282,7 +282,12 @@ class YuantaClient:
         if "time" not in df.columns or "close" not in df.columns:
             return pd.DataFrame()
 
-        df["time"] = pd.to_datetime(df["time"], errors="coerce").dt.date
+        # Hỗ trợ cả chuỗi ngày YYYY-MM-DD, ISO datetime, và Unix timestamp (giây / mili-giây)
+        if pd.api.types.is_numeric_dtype(df["time"]):
+            unit = "ms" if df["time"].dropna().median() > 1e11 else "s"
+            df["time"] = pd.to_datetime(df["time"], unit=unit, errors="coerce").dt.date
+        else:
+            df["time"] = pd.to_datetime(df["time"], errors="coerce").dt.date
         df = df.dropna(subset=["time"])
 
         for num_col in ["open", "high", "low", "close", "volume"]:
