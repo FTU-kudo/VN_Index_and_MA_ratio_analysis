@@ -272,8 +272,8 @@ class YuantaClient:
 
         for target, cands in {
             "open": ["open", "openprice", "open_price", "o"],
-            "high": ["high", "highprice", "high_price", "h"],
-            "low": ["low", "lowprice", "low_price", "l"],
+            "high": ["high", "highest", "highprice", "high_price", "h"],
+            "low": ["low", "lowest", "lowprice", "low_price", "l"],
             "close": ["close", "closeprice", "close_price", "adjclose", "adj_close", "matchprice", "c"],
             "volume": ["volume", "totalvolume", "total_volume", "vol", "matchvolume", "totalvol", "v"],
         }.items():
