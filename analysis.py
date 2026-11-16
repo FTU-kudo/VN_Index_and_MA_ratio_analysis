@@ -1,5 +1,6 @@
 import argparse
 import copy
+import json
 import os
 import smtplib
 import sys
@@ -163,6 +164,66 @@ def process_data(full_df: pd.DataFrame) -> pd.DataFrame:
     daily_stats["breadth_sell_cross"] = (prev_ma20 >= prev_ma50) & (daily_stats["pct_MA20"] < daily_stats["pct_MA50"])
 
     return daily_stats
+
+
+def export_all_groups_json(
+    client: YuantaClient,
+    full_df: pd.DataFrame,
+    vnindex_df: pd.DataFrame,
+    foreign_df: pd.DataFrame | None,
+    plot_start_date: str = "2021-06-25",
+    output_json: str = "output/breadth_groups.json",
+):
+    """
+    Tính toán MA Ratio (MA10, MA20, MA50, MA200) cho tất cả các nhóm chỉ số & nhóm ngành
+    trong INDEX_GROUPS và xuất ra file JSON để build_pages.py nhúng vào GitHub Pages.
+    """
+    print("Bước 5b: Tính toán MA Ratio cho tất cả các nhóm chỉ số & nhóm ngành...")
+    plot_start = pd.to_datetime(plot_start_date).date()
+    base_df = vnindex_df[vnindex_df["time"] >= plot_start].sort_values("time").reset_index(drop=True)
+    if base_df.empty:
+        return
+
+    if foreign_df is not None and not foreign_df.empty:
+        base_df = pd.merge(base_df, foreign_df[["time", "foreign_net_val"]], on="time", how="left")
+        base_df["foreign_net_val"] = base_df["foreign_net_val"].fillna(0.0)
+    else:
+        base_df["foreign_net_val"] = 0.0
+
+    payload = {
+        "dates": [d.strftime("%Y-%m-%d") for d in base_df["time"]],
+        "vnindex": [round(float(v), 2) if pd.notna(v) else None for v in base_df["VNINDEX"]],
+        "foreign_net_val": [round(float(v), 2) for v in base_df["foreign_net_val"]],
+        "groups": {},
+    }
+
+    for grp in INDEX_GROUPS:
+        if grp == "HOSE":
+            syms = sorted(full_df["symbol"].unique().tolist())
+        else:
+            syms = client.get_index_symbols(grp)
+        if not syms:
+            continue
+
+        sub_df = full_df[full_df["symbol"].isin(syms)]
+        if sub_df.empty:
+            continue
+
+        stats = process_data(sub_df)
+        merged = pd.merge(base_df[["time"]], stats, on="time", how="left")
+        payload["groups"][grp] = {
+            "count": len(syms),
+            "pct_MA10": [round(float(v), 2) if pd.notna(v) else None for v in merged["pct_MA10"]],
+            "pct_MA20": [round(float(v), 2) if pd.notna(v) else None for v in merged["pct_MA20"]],
+            "pct_MA50": [round(float(v), 2) if pd.notna(v) else None for v in merged["pct_MA50"]],
+            "pct_MA200": [round(float(v), 2) if pd.notna(v) else None for v in merged["pct_MA200"]],
+        }
+        print(f"  + {grp}: {len(syms)} mã")
+
+    os.makedirs(os.path.dirname(output_json) or ".", exist_ok=True)
+    with open(output_json, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False)
+    print(f"Đã xuất dữ liệu các nhóm ngành ra {output_json}")
 
 
 def get_vnindex(client: YuantaClient, start_date: str, end_date: str) -> pd.DataFrame:
@@ -486,6 +547,13 @@ if __name__ == "__main__":
                         "output/market_breadth_chart_ma50_ma200.html",
                         plot_start_date=plot_start_date,
                         foreign_df=foreign_df,
+                    )
+                    export_all_groups_json(
+                        client,
+                        df,
+                        vnindex,
+                        foreign_df,
+                        plot_start_date=plot_start_date,
                     )
                     print("Hoàn thành bước build!")
                 else:
