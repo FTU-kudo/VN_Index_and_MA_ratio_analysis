@@ -43,6 +43,20 @@ jobs:
           restore-keys: |
             hose-data-
 
+      - name: Chẩn đoán Yuanta API (không làm fail workflow)
+        continue-on-error: true
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36"
+          for URL in \
+            "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?exchange=HSX" \
+            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?exchange=HSX" \
+            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch/price_history/ACB?from_date=2026-11-10&to_date=2026-11-16" \
+            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch/price_history/VNINDEX?from_date=2026-11-10&to_date=2026-11-16"; do
+            echo "=== $URL"
+            curl -sS -m 20 -A "$UA" -H "Accept: application/json" -o /tmp/body.txt -w "HTTP %{http_code} | %{content_type} | %{size_download} bytes\n" "$URL" || true
+            head -c 300 /tmp/body.txt; echo
+          done
+
       - name: Build report (tải dữ liệu + tính toán + vẽ biểu đồ)
         run: python analysis.py --build
 
@@ -55,7 +69,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/*.html output/*.pdf docs/index.html
+          git add output/*.html output/*.pdf docs/index.html hose_symbols.txt
           git commit -m "Auto-generated analysis report [skip ci]" || echo "No changes to commit"
           git push
 
