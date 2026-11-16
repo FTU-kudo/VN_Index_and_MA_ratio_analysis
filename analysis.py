@@ -297,7 +297,7 @@ def export_all_groups_json(
             "count": len(syms),
             "index_code": code,
             "index_points": [round(float(v), 2) if pd.notna(v) else None for v in pts],
-            "index_snapshot": store.snapshots.get(code),
+            "index_snapshot": store.snapshot_for(code),
             "pct_MA10": r2("pct_MA10"), "pct_MA20": r2("pct_MA20"),
             "pct_MA50": r2("pct_MA50"), "pct_MA200": r2("pct_MA200"),
             "buy": buy, "sell": sell,
@@ -609,7 +609,9 @@ if __name__ == "__main__":
                 stats = process_data(df_group if not df_group.empty else df)
                 print("Bước 4b: Lấy điểm số các chỉ số từ Yuanta index_transaction...")
                 store = IndexStore()
-                store.update_from_api(client, [group_index_code(g) for g in INDEX_GROUPS])
+                index_codes = [group_index_code(g) for g in INDEX_GROUPS]
+                store.update_from_history(client, index_codes)   # nguồn chính: lịch sử ngày của mọi chỉ số
+                store.update_from_api(client, index_codes)       # bổ sung: tăng/giảm phiên hiện tại + đối chiếu
                 vnindex = get_vnindex(store)
                 foreign_df = get_vnindex_foreign(client, fetch_start_date, end_date)
 
