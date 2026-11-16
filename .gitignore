@@ -197,3 +197,6 @@ docs/.DS_Store
 
 # Obsidian config (This is unrelated to the project)
 .obsidian/
+
+# Index history csv
+!data/index_history.csv
