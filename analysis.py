@@ -557,11 +557,14 @@ if __name__ == "__main__":
                     )
                     print("Hoàn thành bước build!")
                 else:
-                    print("Không có dữ liệu VNINDEX để vẽ biểu đồ.")
+                    print("LỖI NGHIÊM TRỌNG: Không có dữ liệu VNINDEX từ Yuanta API để vẽ biểu đồ.")
+                    sys.exit(1)
             else:
-                print("Dữ liệu cổ phiếu trống.")
+                print("LỖI NGHIÊM TRỌNG: Dữ liệu cổ phiếu trống.")
+                sys.exit(1)
         else:
-            print("Không có danh sách cổ phiếu hợp lệ.")
+            print("LỖI NGHIÊM TRỌNG: Không có danh sách cổ phiếu hợp lệ.")
+            sys.exit(1)
 
     if run_send:
         send_email_with_pdfs(pdf_files)

@@ -54,8 +54,10 @@ INDEX_GROUPS = [
 ]
 
 DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; VNIndex-MARatio-Quant/2.0)",
-    "Accept": "application/json",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Origin": "https://ysradar.yuanta.com.vn",
+    "Referer": "https://ysradar.yuanta.com.vn/",
 }
 
 # Danh sách fallback các mã thanh khoản cao trên HOSE (VN30 + Midcap tiêu biểu)
@@ -122,13 +124,17 @@ class YuantaClient:
             resp.raise_for_status()
             return resp.json()
         except requests.exceptions.Timeout:
-            logger.warning("Timeout khi gọi %s với params=%s", url, params)
+            print(f"[YuantaClient] TIMEOUT khi gọi {url} params={params}")
+            return None
+        except requests.exceptions.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else "?"
+            print(f"[YuantaClient] HTTP {status} khi gọi {url} params={params}: {exc}")
             return None
         except requests.exceptions.RequestException as exc:
-            logger.warning("Lỗi HTTP khi gọi %s: %s", url, exc)
+            print(f"[YuantaClient] Lỗi kết nối khi gọi {url}: {exc}")
             return None
         except ValueError as exc:
-            logger.warning("Lỗi parse JSON từ %s: %s", url, exc)
+            print(f"[YuantaClient] Lỗi parse JSON từ {url}: {exc}")
             return None
         finally:
             if self.rate_limit_delay > 0:
