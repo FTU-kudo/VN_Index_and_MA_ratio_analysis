@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -177,25 +177,50 @@ class YuantaClient:
         symbol: str,
         from_date: str,
         to_date: str,
+        chunk_days: int = 365,
     ) -> pd.DataFrame:
         """
         Lấy dữ liệu OHLCV lịch sử từ API Yuanta (từ 2010 - hiện tại).
+        Tự động chia nhỏ theo từng khoảng `chunk_days` (mặc định 365 ngày) để tránh
+        giới hạn số bản ghi/request của API.
         Chuẩn hóa cột về: ['time', 'open', 'high', 'low', 'close', 'volume', 'symbol']
         """
         sym = str(symbol).strip().upper()
-        start = _validate_date(from_date)
-        end = _validate_date(to_date)
+        start_dt = datetime.strptime(_validate_date(from_date), "%Y-%m-%d").date()
+        end_dt = datetime.strptime(_validate_date(to_date), "%Y-%m-%d").date()
 
-        url = PRICE_HISTORY_URL.format(symbol=sym)
-        payload = self._get_json(url, {"from_date": start, "to_date": end})
-        records = _extract_records(payload)
-
-        if not records:
+        if start_dt > end_dt:
             return pd.DataFrame()
 
-        df = pd.DataFrame(records)
-        df = self._normalize_ohlcv_columns(df, sym)
-        return df
+        url = PRICE_HISTORY_URL.format(symbol=sym)
+        dfs: List[pd.DataFrame] = []
+        cur_start = start_dt
+
+        while cur_start <= end_dt:
+            cur_end = min(cur_start + timedelta(days=chunk_days - 1), end_dt)
+            payload = self._get_json(
+                url,
+                {
+                    "from_date": cur_start.strftime("%Y-%m-%d"),
+                    "to_date": cur_end.strftime("%Y-%m-%d"),
+                },
+            )
+            records = _extract_records(payload)
+            if records:
+                chunk_df = self._normalize_ohlcv_columns(pd.DataFrame(records), sym)
+                if not chunk_df.empty:
+                    dfs.append(chunk_df)
+            cur_start = cur_end + timedelta(days=1)
+
+        if not dfs:
+            return pd.DataFrame()
+
+        full_df = pd.concat(dfs, ignore_index=True)
+        return (
+            full_df.sort_values("time")
+            .drop_duplicates(subset=["time"], keep="last")
+            .reset_index(drop=True)
+        )
 
     def get_foreign_history(
         self,
