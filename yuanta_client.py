@@ -13,7 +13,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -33,6 +33,13 @@ LIST_STOCK_INFO_URLS = [
     LIST_STOCK_INFO_URL,
     "https://ysradarapi.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info",
 ]
+
+# Snapshot phiên hiện tại của một chỉ số (điểm số, tham chiếu, tăng/giảm, khớp lệnh theo phút):
+INDEX_TRANSACTION_URL = "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/{code}"
+VN_TZ = timezone(timedelta(hours=7))
+
+# Nhóm -> mã chỉ số dùng cho index_transaction (HOSE = toàn sàn = VNINDEX)
+GROUP_TO_INDEX_CODE = {"HOSE": "VNINDEX", "HSX": "VNINDEX"}
 
 # Danh sách các bộ lọc chỉ số & nhóm ngành trên VN-Index / HOSE
 INDEX_GROUPS = [
@@ -234,6 +241,76 @@ class YuantaClient:
             if len(sym_str) == 3 and sym_str.isalpha():
                 symbols.append(sym_str)
         return sorted(set(symbols))
+
+    def get_index_snapshot(self, code: str) -> Optional[Dict[str, Any]]:
+        """
+        Lấy điểm số chỉ số của phiên GẦN NHẤT từ endpoint index_transaction/{code}
+        (VNINDEX, VN30, VNREAL, ...). Endpoint này chỉ có dữ liệu trong phiên (từng phút),
+        KHÔNG có lịch sử nhiều ngày -> lịch sử phải được tích luỹ bằng index_store.py.
+
+        Trả về dict: code, date, close (CurrIndex), ref, change, change_pct, up, down, no_change,
+        ceiling, floor, total_vol, total_val, n_records, session_id, last_tx_time, is_final.
+        """
+        code = str(code).strip().upper()
+        url = INDEX_TRANSACTION_URL.format(code=code)
+        resp: Optional[Dict[str, Any]] = None
+        for extra in (None, ORIGIN_HEADERS):
+            payload = self._get_json(url, {}, extra_headers=extra)
+            body = payload.get("response") if isinstance(payload, dict) else None
+            if isinstance(body, dict) and body:
+                resp = body
+                break
+            if payload is not None:
+                self._count("empty_payloads")
+                print(f"[YuantaClient] index_transaction/{code}: không có 'response' dạng object. Sample: {str(payload)[:200]}")
+        if resp is None:
+            return None
+
+        txs = [t for t in (resp.get("ListTransaction") or []) if isinstance(t, dict)]
+        last_tx = max(txs, key=lambda t: t.get("UnixTime") or 0) if txs else None
+        last_dt = None
+        if last_tx and last_tx.get("UnixTime"):
+            last_dt = datetime.fromtimestamp(int(last_tx["UnixTime"]), VN_TZ)
+
+        def _num(v):
+            try:
+                f = float(v)
+                return f if f == f else None
+            except (TypeError, ValueError):
+                return None
+
+        close = _num(_pick(resp, "CurrIndex"))
+        if not close and last_tx:
+            close = _num(last_tx.get("Index"))
+        ref = _num(_pick(resp, "RefIndex"))
+        if not close or close <= 0:
+            print(f"[YuantaClient] index_transaction/{code}: CurrIndex không hợp lệ ({close}).")
+            return None
+
+        now = datetime.now(VN_TZ)
+        session_date = (last_dt or now).date()
+        # Chốt phiên: dữ liệu của ngày trước đó, hoặc đã qua 15:00 (UTC+7) của chính ngày hôm nay.
+        is_final = session_date < now.date() or (session_date == now.date() and now.time() >= datetime.strptime("15:00", "%H:%M").time())
+        change = (close - ref) if ref else None
+        return {
+            "code": str(_pick(resp, "IndexCode") or code).upper(),
+            "date": session_date.strftime("%Y-%m-%d"),
+            "close": round(close, 2),
+            "ref": round(ref, 2) if ref else None,
+            "change": round(change, 2) if change is not None else None,
+            "change_pct": round(change / ref * 100, 2) if ref else None,
+            "up": _num(_pick(resp, "Up")),
+            "down": _num(_pick(resp, "Down")),
+            "no_change": _num(_pick(resp, "NoChange")),
+            "ceiling": _num(_pick(resp, "Ceiling")),
+            "floor": _num(_pick(resp, "Floor")),
+            "total_vol": _num(_pick(resp, "TotalVolTrade")),
+            "total_val": _num(_pick(resp, "TotalValTrade")),
+            "n_records": len(txs),
+            "session_id": str(_pick(resp, "CurrTradingSessionID") or ""),
+            "last_tx_time": last_dt.strftime("%H:%M:%S") if last_dt else None,
+            "is_final": bool(is_final),
+        }
 
     def get_all_index_groups(self, groups: Optional[List[str]] = None) -> Dict[str, List[str]]:
         """Lấy danh sách mã cổ phiếu cho toàn bộ các bộ lọc chỉ số & nhóm ngành."""
