@@ -67,8 +67,8 @@ def get_historical_data(client: YuantaClient, symbols, start_date: str, end_date
             cached_df = pd.read_csv(csv_file)
             cached_df["time"] = pd.to_datetime(cached_df["time"]).dt.date
             last_date = cached_df["time"].max()
-            # Lùi lại 7 ngày để bù các phiên nghỉ/giá điều chỉnh, chỉ tải phần dữ liệu mới
-            fetch_start = (pd.to_datetime(last_date) - pd.Timedelta(days=7)).strftime("%Y-%m-%d")
+            # Lùi lại 14 ngày để bù các phiên nghỉ/giá điều chỉnh/lỗi cache, chỉ tải phần dữ liệu mới
+            fetch_start = (pd.to_datetime(last_date) - pd.Timedelta(days=14)).strftime("%Y-%m-%d")
             print(f"Đã có cache đến {last_date}. Chỉ tải bổ sung từ {fetch_start}...")
         except Exception as e:
             print("Lỗi khi đọc file CSV cache, sẽ tải lại toàn bộ:", e)
@@ -113,7 +113,7 @@ def get_historical_data(client: YuantaClient, symbols, start_date: str, end_date
     full_df = full_df.drop_duplicates(subset=["symbol", "time"], keep="last")
     full_df = full_df.sort_values(by=["symbol", "time"]).reset_index(drop=True)
 
-    print(f"Lưu dữ liệu ra file {csv_file} (tổng {len(full_df)} dòng)...")
+    print(f"Lưu dữ liệu ra file {csv_file} (tổng {len(full_df)} dòng, từ {full_df['time'].min()} đến {full_df['time'].max()})...")
     full_df.to_csv(csv_file, index=False)
     return full_df
 
