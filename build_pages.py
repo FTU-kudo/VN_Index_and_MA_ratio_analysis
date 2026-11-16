@@ -259,7 +259,12 @@ window.BREADTH_DATA = {groups_json};
     if (!el) return;
     var g = window.BREADTH_DATA && window.BREADTH_DATA.groups && window.BREADTH_DATA.groups[groupCode];
     var s = g && g.index_snapshot;
-    if (!s) { el.textContent = ''; return; }
+    if (!s) {
+      var has = g && g.index_points && g.index_points.some(function (v) { return v !== null; });
+      el.style.color = '#b45309';
+      el.textContent = has ? '' : ('⚠ Chưa có điểm số ' + indexLabel(groupCode) + ' (API chỉ số lỗi và lịch sử chưa được nạp)');
+      return;
+    }
     var up = s.change_pct >= 0;
     var color = up ? '#16a34a' : '#dc2626';
     var d = s.date.split('-');
