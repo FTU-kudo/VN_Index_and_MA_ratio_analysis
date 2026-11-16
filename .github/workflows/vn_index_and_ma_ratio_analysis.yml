@@ -44,8 +44,6 @@ jobs:
             hose-data-
 
       - name: Build report (tải dữ liệu + tính toán + vẽ biểu đồ)
-        env:
-          VNSTOCK_API_KEY: ${{ secrets.VNSTOCK_API_KEY }}
         run: python analysis.py --build
 
       # ── MỚI: tạo docs/index.html cho GitHub Pages ─────────────────────── #
