@@ -36,6 +36,15 @@ LIST_STOCK_INFO_URLS = [
 
 # Snapshot phiên hiện tại của một chỉ số (điểm số, tham chiếu, tăng/giảm, khớp lệnh theo phút):
 INDEX_TRANSACTION_URL = "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/{code}"
+# Lịch sử điểm số HÀNG NGÀY của mọi chỉ số (VNINDEX, VN30, VNREAL, VNHEAL, ...) - định dạng TradingView:
+#   {"s": "ok", "bars": [{"t": epoch_giây (07:00 UTC+7 của ngày giao dịch), "o","h","l","c","v"}, ...]}
+TRADINGVIEW_HISTORY_URL = "https://ysradar.yuanta.com.vn/v2/tradingview/history"
+
+# Host dự phòng (CHƯA xác minh) - chỉ dùng khi host chính không trả dữ liệu
+INDEX_TRANSACTION_URLS = [
+    INDEX_TRANSACTION_URL,
+    "https://ysradarapi.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/{code}",
+]
 VN_TZ = timezone(timedelta(hours=7))
 
 # Nhóm -> mã chỉ số dùng cho index_transaction (HOSE = toàn sàn = VNINDEX)
@@ -242,6 +251,55 @@ class YuantaClient:
                 symbols.append(sym_str)
         return sorted(set(symbols))
 
+    def get_index_history(self, code: str, from_date: str = "2010-01-01", to_date: Optional[str] = None) -> pd.DataFrame:
+        """
+        Lấy lịch sử điểm số HÀNG NGÀY của một chỉ số từ endpoint TradingView của Yuanta (từ 2010 hoặc từ ngày
+        chỉ số đó ra đời). Trả về DataFrame [time(date), open, high, low, close, volume, code].
+        1 request lấy toàn bộ lịch sử (limit=100000), không cần chia khoảng.
+        """
+        code = str(code).strip().upper()
+        start_dt = datetime.strptime(_validate_date(from_date), "%Y-%m-%d").replace(tzinfo=VN_TZ)
+        end_dt = (
+            datetime.strptime(_validate_date(to_date), "%Y-%m-%d").replace(tzinfo=VN_TZ) + timedelta(days=1)
+            if to_date else datetime.now(VN_TZ) + timedelta(days=1)
+        )
+        params = {
+            "symbol": code, "resolution": "1D",
+            "from": int(start_dt.timestamp()), "to": int(end_dt.timestamp()), "limit": 100000,
+        }
+        payload = None
+        for extra in (None, ORIGIN_HEADERS):
+            payload = self._get_json(TRADINGVIEW_HISTORY_URL, params, extra_headers=extra)
+            if isinstance(payload, dict) and payload.get("s") == "ok":
+                break
+        if not isinstance(payload, dict) or payload.get("s") != "ok":
+            if payload is not None:
+                self._count("empty_payloads")
+                print(f"[YuantaClient] tradingview/history {code}: s={payload.get('s') if isinstance(payload, dict) else '?'} | {str(payload)[:150]}")
+            return pd.DataFrame()
+
+        bars = payload.get("bars")
+        if isinstance(bars, list) and bars and isinstance(bars[0], dict):
+            raw = pd.DataFrame(bars)                      # dạng Yuanta: list các object {t,o,h,l,c,v}
+        elif isinstance(payload.get("t"), list):          # dạng TradingView chuẩn: các mảng song song
+            raw = pd.DataFrame({k: payload.get(k) for k in ("t", "o", "h", "l", "c", "v") if isinstance(payload.get(k), list)})
+        else:
+            return pd.DataFrame()
+        if raw.empty or "t" not in raw or "c" not in raw:
+            return pd.DataFrame()
+
+        df = pd.DataFrame({
+            "time": [datetime.fromtimestamp(int(t), VN_TZ).date() for t in raw["t"]],
+            "open": pd.to_numeric(raw.get("o"), errors="coerce").round(2) if "o" in raw else float("nan"),
+            "high": pd.to_numeric(raw.get("h"), errors="coerce").round(2) if "h" in raw else float("nan"),
+            "low": pd.to_numeric(raw.get("l"), errors="coerce").round(2) if "l" in raw else float("nan"),
+            "close": pd.to_numeric(raw["c"], errors="coerce").round(2),
+            "volume": pd.to_numeric(raw.get("v"), errors="coerce") if "v" in raw else float("nan"),
+            "code": code,
+        })
+        df = df[df["close"] > 0].dropna(subset=["close"])
+        return df.sort_values("time").drop_duplicates("time", keep="last").reset_index(drop=True)
+
     def get_index_snapshot(self, code: str) -> Optional[Dict[str, Any]]:
         """
         Lấy điểm số chỉ số của phiên GẦN NHẤT từ endpoint index_transaction/{code}
@@ -252,17 +310,20 @@ class YuantaClient:
         ceiling, floor, total_vol, total_val, n_records, session_id, last_tx_time, is_final.
         """
         code = str(code).strip().upper()
-        url = INDEX_TRANSACTION_URL.format(code=code)
         resp: Optional[Dict[str, Any]] = None
-        for extra in (None, ORIGIN_HEADERS):
-            payload = self._get_json(url, {}, extra_headers=extra)
-            body = payload.get("response") if isinstance(payload, dict) else None
-            if isinstance(body, dict) and body:
-                resp = body
+        for url_tpl in INDEX_TRANSACTION_URLS:
+            url = url_tpl.format(code=code)
+            for extra in (None, ORIGIN_HEADERS):
+                payload = self._get_json(url, {}, extra_headers=extra)
+                body = payload.get("response") if isinstance(payload, dict) else None
+                if isinstance(body, dict) and body:
+                    resp = body
+                    break
+                if payload is not None:
+                    self._count("empty_payloads")
+                    print(f"[YuantaClient] index_transaction/{code}: không có 'response' dạng object. Sample: {str(payload)[:200]}")
+            if resp is not None:
                 break
-            if payload is not None:
-                self._count("empty_payloads")
-                print(f"[YuantaClient] index_transaction/{code}: không có 'response' dạng object. Sample: {str(payload)[:200]}")
         if resp is None:
             return None
 
