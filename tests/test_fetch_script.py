@@ -34,6 +34,7 @@ def test_winner_is_first_working_profile():
     f.requests.get = fake_get
     _, winner = f.run_probes()
     assert winner == {"host": "ysradar", "url": f.HISTORY_URLS["ysradar"], "profile": "curl_like"}
+    assert {"address_bar", "referer_only", "origin_only"} <= set(f.PROFILES)
 
 def test_no_winner_gives_exit_2_and_report(tmp_path, monkeypatch):
     f.requests.get = MagicMock(return_value=_resp(None, 403, "blocked"))
@@ -41,3 +42,15 @@ def test_no_winner_gives_exit_2_and_report(tmp_path, monkeypatch):
     monkeypatch.setattr(sys, "argv", ["x", "--report", str(rep)])
     assert f.main() == 2
     d = json.loads(rep.read_text()); assert d["status"] == "no_working_request" and len(d["probes"]) >= 10
+
+
+def test_build_pages_refuses_to_wipe_page_without_data(tmp_path, monkeypatch):
+    """Lỗi từng gặp: rebuild khi thiếu breadth_groups.json ghi BREADTH_DATA = null đè lên trang tốt."""
+    import importlib, subprocess
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    (tmp_path / "output").mkdir(); (tmp_path / "docs").mkdir()
+    (tmp_path / "output" / "market_breadth_chart.html").write_text("<html><head></head><body>x</body></html>")
+    (tmp_path / "docs" / "index.html").write_text("TRANG TỐT")
+    r = subprocess.run([sys.executable, os.path.join(root, "build_pages.py")], cwd=tmp_path, capture_output=True, text=True)
+    assert r.returncode == 1 and "KHÔNG ghi đè" in r.stdout
+    assert (tmp_path / "docs" / "index.html").read_text() == "TRANG TỐT"
