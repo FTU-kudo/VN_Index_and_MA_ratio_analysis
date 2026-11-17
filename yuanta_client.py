@@ -166,6 +166,7 @@ class YuantaClient:
         self.timeout = timeout
         self.rate_limit_delay = rate_limit_delay
         self._lock = threading.Lock()
+        self.history_url = TRADINGVIEW_HISTORY_URL   # có thể đổi bởi scripts/fetch_index_ohlcv.py nếu probe tìm ra URL/host chạy được
         self.failed_requests = 0   # số request lỗi mạng/HTTP/không phải JSON
         self.empty_payloads = 0    # số request trả JSON hợp lệ nhưng không có bản ghi
 
@@ -269,7 +270,7 @@ class YuantaClient:
         params = {"symbol": code, "resolution": "1D", "from": from_ts, "to": to_ts, "limit": 100000}
         payload = None
         for extra in (None, ORIGIN_HEADERS):
-            payload = self._get_json(TRADINGVIEW_HISTORY_URL, params, extra_headers=extra, timeout=(10, 90))
+            payload = self._get_json(self.history_url, params, extra_headers=extra, timeout=(10, 90))
             if isinstance(payload, dict) and payload.get("s") == "ok":
                 break
         if not isinstance(payload, dict) or payload.get("s") != "ok":
