@@ -131,7 +131,6 @@ TOP_BAR = """\
   <div class="vn-ctrl-group">
     <button id="vn-theme-toggle" class="vn-btn" type="button">&#127769; Dark</button>
     <button id="vn-lang-toggle" class="vn-btn" type="button">&#127760; VI</button>
-    <div id="vn-index-info" style="font-size:13px; font-weight:600; white-space:nowrap;"></div>
     <div style="color:var(--text-muted); font-size:12.5px; white-space:nowrap;">
       &#128336;&nbsp;Accessed at:&nbsp;<strong><span id="vn-access-time">&#8211;</span></strong>
     </div>
@@ -245,46 +244,15 @@ window.BREADTH_DATA = {groups_json};
     return indices;
   }
 
-  function indexLabel(groupCode) {
-    var g = window.BREADTH_DATA && window.BREADTH_DATA.groups && window.BREADTH_DATA.groups[groupCode];
-    return (groupCode === 'HOSE') ? 'VN-Index' : ((g && g.index_code) || groupCode);
-  }
-
-  function fmtNum(v, d) {
-    return Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
-  }
-
-  function renderIndexInfo(groupCode) {
-    var el = document.getElementById('vn-index-info');
-    if (!el) return;
-    var g = window.BREADTH_DATA && window.BREADTH_DATA.groups && window.BREADTH_DATA.groups[groupCode];
-    var s = g && g.index_snapshot;
-    if (!s) {
-      var has = g && g.index_points && g.index_points.some(function (v) { return v !== null; });
-      el.style.color = '#b45309';
-      el.textContent = has ? '' : ('⚠ Chưa có điểm số ' + indexLabel(groupCode) + ' (API chỉ số lỗi và lịch sử chưa được nạp)');
-      return;
-    }
-    var up = s.change_pct >= 0;
-    var color = up ? '#16a34a' : '#dc2626';
-    var d = s.date.split('-');
-    var txt = indexLabel(groupCode) + ' ' + fmtNum(s.close, 2) + ' ' + (up ? '▲ +' : '▼ ') +
-      fmtNum(s.change, 2) + ' (' + (up ? '+' : '') + fmtNum(s.change_pct, 2) + '%)';
-    if (s.up != null && s.down != null) txt += ' · ' + s.up + '↑ ' + (s.no_change || 0) + '= ' + s.down + '↓';
-    txt += ' · ' + d[2] + '/' + d[1] + '/' + d[0] + (s.is_final ? '' : ' (tạm thời)');
-    el.style.color = color;
-    el.textContent = txt;
-  }
-
   function updateGroupChart(gdiv, groupCode) {
     if (!window.BREADTH_DATA || !window.BREADTH_DATA.groups || !window.BREADTH_DATA.groups[groupCode]) return;
     var gData = window.BREADTH_DATA.groups[groupCode];
     var dates = window.BREADTH_DATA.dates;
     var maKeys = [
-      { kw: 'STOCKS > MA10',  key: 'pct_MA10'  },
-      { kw: 'STOCKS > MA20',  key: 'pct_MA20'  },
-      { kw: 'STOCKS > MA50',  key: 'pct_MA50'  },
-      { kw: 'STOCKS > MA200', key: 'pct_MA200' }
+      { kw: 'MA10',  key: 'pct_MA10'  },
+      { kw: 'MA20',  key: 'pct_MA20'  },
+      { kw: 'MA50',  key: 'pct_MA50'  },
+      { kw: 'MA200', key: 'pct_MA200' }
     ];
     maKeys.forEach(function (m) {
       var idxs = findTraceIndices(gdiv, m.kw);
@@ -292,25 +260,6 @@ window.BREADTH_DATA = {groups_json};
         Plotly.restyle(gdiv, { x: [dates], y: [gData[m.key]] }, idxs);
       }
     });
-
-    // Điểm số CHÍNH CỦA chỉ số đang chọn (VN-Index / VN30 / VNREAL ...) thay cho đường VN-Index cố định
-    var label = indexLabel(groupCode);
-    var idxTrace = findTraceIndices(gdiv, 'PTS, LEFT AXIS');
-    if (idxTrace.length > 0 && gData.index_points) {
-      var oh = gData.index_ohlcv;
-      var cd = oh ? dates.map(function (_, i) { return [oh.o[i], oh.h[i], oh.l[i], oh.v[i]]; }) : null;
-      var tpl = '<b>' + label + '</b> %{y:,.2f}<br>O %{customdata[0]:,.2f} · H %{customdata[1]:,.2f} · L %{customdata[2]:,.2f}' +
-                '<br>Vol %{customdata[3]:,.0f}<extra></extra>';
-      Plotly.restyle(gdiv, { x: [dates], y: [gData.index_points], name: [label + ' (Pts, left axis)'],
-                             customdata: [cd], hovertemplate: [tpl] }, idxTrace);
-    }
-    // Tín hiệu Mua/Bán đặt đúng tại điểm số của chỉ số đang chọn
-    var buyT = findTraceIndices(gdiv, 'BUY SIGNAL');
-    if (buyT.length > 0 && gData.buy) Plotly.restyle(gdiv, { x: [gData.buy.x], y: [gData.buy.y] }, buyT);
-    var sellT = findTraceIndices(gdiv, 'SELL SIGNAL');
-    if (sellT.length > 0 && gData.sell) Plotly.restyle(gdiv, { x: [gData.sell.x], y: [gData.sell.y] }, sellT);
-
-    renderIndexInfo(groupCode);
     applyLayout(gdiv);
   }
 
@@ -321,14 +270,14 @@ window.BREADTH_DATA = {groups_json};
     var fg = isDark ? '#f3f4f6' : '#222222';
     var grid = isDark ? '#374151' : '#cccccc';
     Plotly.relayout(gdiv, {
-      'title.text': t.titlePrefix.replace(/VN-Index/g, indexLabel(currentGroup)) + ' — ' + grpName,
+      'title.text': t.titlePrefix + ' — ' + grpName,
       'title.font.color': fg,
       'paper_bgcolor': bg,
       'plot_bgcolor': bg,
       'font.color': fg,
       'xaxis.title.text': t.xAxis,
       'xaxis.gridcolor': grid,
-      'yaxis.title.text': t.yLeft.replace(/VN-Index/g, indexLabel(currentGroup)),
+      'yaxis.title.text': t.yLeft,
       'yaxis2.title.text': t.yRight,
       'yaxis2.gridcolor': grid
     });
@@ -356,10 +305,10 @@ window.BREADTH_DATA = {groups_json};
       clearInterval(timer);
 
       [
-        { id: 'cb-ma10',  kw: 'STOCKS > MA10'  },
-        { id: 'cb-ma20',  kw: 'STOCKS > MA20'  },
-        { id: 'cb-ma50',  kw: 'STOCKS > MA50'  },
-        { id: 'cb-ma200', kw: 'STOCKS > MA200' }
+        { id: 'cb-ma10',  kw: 'MA10'  },
+        { id: 'cb-ma20',  kw: 'MA20'  },
+        { id: 'cb-ma50',  kw: 'MA50'  },
+        { id: 'cb-ma200', kw: 'MA200' }
       ].forEach(function (ma) {
         var cb = document.getElementById(ma.id);
         if (!cb) return;
@@ -396,7 +345,6 @@ window.BREADTH_DATA = {groups_json};
       }
 
       applyUI(gd);
-      renderIndexInfo(currentGroup);
     } else if (++tries >= 100) {
       clearInterval(timer);
     }

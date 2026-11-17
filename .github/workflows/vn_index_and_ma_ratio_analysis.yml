@@ -15,11 +15,6 @@ on:
           - send-email
 permissions:
   contents: write
-
-concurrency:
-  group: data-commit
-  cancel-in-progress: false
-
 jobs:
   build:
     if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.mode == 'both' || github.event.inputs.mode == 'build' }}
@@ -48,23 +43,6 @@ jobs:
           restore-keys: |
             hose-data-
 
-      - name: Chẩn đoán Yuanta API (không làm fail workflow)
-        continue-on-error: true
-        run: |
-          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36"
-          for URL in \
-            "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?exchange=HSX" \
-            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?exchange=HSX" \
-            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch/price_history/ACB?from_date=2026-11-10&to_date=2026-11-16" \
-            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch/price_history/VNINDEX?from_date=2026-11-10&to_date=2026-11-16" \
-            "https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1794000000&to=1794873600&limit=100000" \
-            "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/VNINDEX" \
-            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/VNINDEX"; do
-            echo "=== $URL"
-            curl -sS -m 20 -A "$UA" -H "Accept: application/json" -o /tmp/body.txt -w "HTTP %{http_code} | %{content_type} | %{size_download} bytes\n" "$URL" || true
-            head -c 300 /tmp/body.txt; echo
-          done
-
       - name: Build report (tải dữ liệu + tính toán + vẽ biểu đồ)
         run: python analysis.py --build
 
@@ -78,10 +56,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add output/*.html output/*.pdf docs/index.html
-          git add hose_symbols.txt 2>/dev/null || true
-          git add -f data/index_history.csv 2>/dev/null || true
           git commit -m "Auto-generated analysis report [skip ci]" || echo "No changes to commit"
-          git pull --rebase --autostash origin main || true
           git push
 
       - name: Upload PDFs as artifact
