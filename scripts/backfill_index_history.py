@@ -101,7 +101,7 @@ def main():
         from yuanta_client import YuantaClient
         store = IndexStore()
         store.update_from_history(YuantaClient(), codes, full_from=args.start if args.start != "2020-06-25" else "2010-01-01", force_full=True)
-        print(f"Kho hiện có {len(store.df)} dòng, {store.df['code'].nunique()} chỉ số -> {store.path}")
+        print(f"Kho OHLCV hiện có {len(store.ohl)} dòng, {store.ohl['code'].nunique()} chỉ số -> {store.ohlcv_path}")
         return
     rows = from_vnstock(codes, args.start, args.end) if args.source == "vnstock" else from_csv(args.csv)
     if rows.empty:
