@@ -173,9 +173,10 @@ class YuantaClient:
         with self._lock:
             setattr(self, attr, getattr(self, attr) + 1)
 
-    def _get_json(self, url: str, params: Dict[str, Any], extra_headers: Optional[Dict[str, str]] = None) -> Any:
+    def _get_json(self, url: str, params: Dict[str, Any], extra_headers: Optional[Dict[str, str]] = None,
+                  timeout: Optional[tuple] = None) -> Any:
         try:
-            resp = self.session.get(url, params=params, headers=extra_headers, timeout=self.timeout)
+            resp = self.session.get(url, params=params, headers=extra_headers, timeout=timeout or self.timeout)
             resp.raise_for_status()
         except requests.exceptions.Timeout:
             self._count("failed_requests")
@@ -258,18 +259,17 @@ class YuantaClient:
         1 request lấy toàn bộ lịch sử (limit=100000), không cần chia khoảng.
         """
         code = str(code).strip().upper()
-        start_dt = datetime.strptime(_validate_date(from_date), "%Y-%m-%d").replace(tzinfo=VN_TZ)
-        end_dt = (
-            datetime.strptime(_validate_date(to_date), "%Y-%m-%d").replace(tzinfo=VN_TZ) + timedelta(days=1)
-            if to_date else datetime.now(VN_TZ) + timedelta(days=1)
-        )
-        params = {
-            "symbol": code, "resolution": "1D",
-            "from": int(start_dt.timestamp()), "to": int(end_dt.timestamp()), "limit": 100000,
-        }
+        # Giống URL bạn đã test thành công: from/to là nửa đêm UTC (vd from=1262304000, to=1794873600),
+        # `to` là nửa đêm UTC kế tiếp (không đẩy xa tương lai).
+        from_ts = int(datetime.strptime(_validate_date(from_date), "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp())
+        if to_date:
+            to_ts = int((datetime.strptime(_validate_date(to_date), "%Y-%m-%d").replace(tzinfo=timezone.utc) + timedelta(days=1)).timestamp())
+        else:
+            to_ts = (int(datetime.now(timezone.utc).timestamp()) // 86400 + 1) * 86400
+        params = {"symbol": code, "resolution": "1D", "from": from_ts, "to": to_ts, "limit": 100000}
         payload = None
         for extra in (None, ORIGIN_HEADERS):
-            payload = self._get_json(TRADINGVIEW_HISTORY_URL, params, extra_headers=extra)
+            payload = self._get_json(TRADINGVIEW_HISTORY_URL, params, extra_headers=extra, timeout=(10, 90))
             if isinstance(payload, dict) and payload.get("s") == "ok":
                 break
         if not isinstance(payload, dict) or payload.get("s") != "ok":
