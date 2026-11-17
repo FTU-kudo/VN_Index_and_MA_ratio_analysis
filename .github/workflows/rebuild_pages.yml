@@ -1,16 +1,21 @@
 name: Rebuild Pages (only HTML)
 
+# CHỈ chạy tay. Trước đây tự chạy mỗi khi sửa build_pages.py và dựng lại trang khi chưa có
+# output/breadth_groups.json -> ghi đè trang bằng BREADTH_DATA = null (mất nhóm ngành + đường chỉ số).
+# Workflow "VN-Index and MA Ratio Analysis" đã tự dựng trang sau mỗi lần build, nên thường không cần workflow này.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'build_pages.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-commit
+  cancel-in-progress: false
 
 jobs:
   rebuild:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,7 +27,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Run build_pages.py
+      - name: Run build_pages.py (tự dừng nếu thiếu output/breadth_groups.json)
         run: python build_pages.py
 
       - name: Commit and push if changed
@@ -30,5 +35,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/index.html
-          git diff --staged --quiet || git commit -m "Rebuild docs/index.html via rebuild_pages workflow"
+          git diff --staged --quiet || git commit -m "Rebuild docs/index.html via rebuild_pages workflow [skip ci]"
+          git pull --rebase --autostash origin main || true
           git push
