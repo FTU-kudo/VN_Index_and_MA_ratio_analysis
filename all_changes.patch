@@ -1,0 +1,409 @@
+diff --git a/.github/workflows/vn_index_and_ma_ratio_analysis.yml b/.github/workflows/vn_index_and_ma_ratio_analysis.yml
+index 422d868..ee08e3a 100644
+--- a/.github/workflows/vn_index_and_ma_ratio_analysis.yml
++++ b/.github/workflows/vn_index_and_ma_ratio_analysis.yml
+@@ -43,6 +43,20 @@ jobs:
+           restore-keys: |
+             hose-data-
+ 
++      - name: Chẩn đoán Yuanta API (không làm fail workflow)
++        continue-on-error: true
++        run: |
++          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36"
++          for URL in \
++            "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?exchange=HSX" \
++            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?exchange=HSX" \
++            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch/price_history/ACB?from_date=2026-11-10&to_date=2026-11-16" \
++            "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch/price_history/VNINDEX?from_date=2026-11-10&to_date=2026-11-16"; do
++            echo "=== $URL"
++            curl -sS -m 20 -A "$UA" -H "Accept: application/json" -o /tmp/body.txt -w "HTTP %{http_code} | %{content_type} | %{size_download} bytes\n" "$URL" || true
++            head -c 300 /tmp/body.txt; echo
++          done
++
+       - name: Build report (tải dữ liệu + tính toán + vẽ biểu đồ)
+         run: python analysis.py --build
+ 
+@@ -55,7 +69,7 @@ jobs:
+         run: |
+           git config --global user.name "github-actions[bot]"
+           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+-          git add output/*.html output/*.pdf docs/index.html
++          git add output/*.html output/*.pdf docs/index.html hose_symbols.txt
+           git commit -m "Auto-generated analysis report [skip ci]" || echo "No changes to commit"
+           git push
+ 
+diff --git a/analysis.py b/analysis.py
+index 98fd03a..49d73da 100644
+--- a/analysis.py
++++ b/analysis.py
+@@ -28,11 +28,25 @@ except ImportError:
+     pass
+ 
+ 
+-def get_hose_symbols(client: YuantaClient | None = None, symbols_file: str = "hose_symbols.txt"):
++def _load_symbols_file(path: str):
++    if not os.path.exists(path):
++        return []
++    with open(path, "r", encoding="utf-8") as f:
++        raw = [line.strip().upper() for line in f if line.strip() and not line.startswith("#")]
++    return sorted({s for s in raw if len(s) == 3 and s.isalpha()})
++
++
++def get_hose_symbols(
++    client: YuantaClient | None = None,
++    symbols_file: str = "hose_symbols.txt",
++    cache_csv: str = "hose_6years_data.csv",
++):
+     """
+-    Lấy danh sách ~400 cổ phiếu HOSE hợp lệ (3 ký tự chữ cái viết hoa).
+-    Ưu tiên lấy trực tiếp từ Yuanta API (`HOSE` / `VNALL`), sau đó mới fallback
+-    sang `hose_symbols.txt` hoặc `FALLBACK_HOSE_SYMBOLS`.
++    Lấy danh sách cổ phiếu HOSE hợp lệ (3 ký tự chữ cái viết hoa). Thứ tự ưu tiên:
++      1. Yuanta API (list_stock_info?exchange=HSX)  -> thành công thì lưu lại vào hose_symbols.txt
++      2. hose_symbols.txt (snapshot của lần chạy thành công gần nhất)
++      3. Các mã đang có trong cache CSV (tránh tụt từ ~400 mã xuống 60 mã khi API danh sách lỗi)
++      4. FALLBACK_HOSE_SYMBOLS (60 mã thanh khoản cao)
+     """
+     print("Bước 1: Lấy danh sách cổ phiếu HOSE...")
+     if client is not None:
+@@ -40,20 +54,55 @@ def get_hose_symbols(client: YuantaClient | None = None, symbols_file: str = "ho
+             symbols = client.get_index_symbols(code)
+             if symbols:
+                 print(f"Đã lấy {len(symbols)} mã HOSE từ Yuanta API (index_code={code}).")
++                if code == "HOSE":
++                    try:
++                        with open(symbols_file, "w", encoding="utf-8") as f:
++                            f.write(f"# Auto-generated {datetime.now(ZoneInfo('Asia/Ho_Chi_Minh')):%Y-%m-%d} from Yuanta list_stock_info?exchange=HSX\n")
++                            f.write("\n".join(symbols) + "\n")
++                    except OSError as e:
++                        print("Không ghi được hose_symbols.txt:", e)
+                 return symbols
+ 
+-    if os.path.exists(symbols_file):
+-        with open(symbols_file, "r", encoding="utf-8") as f:
+-            raw = [line.strip().upper() for line in f if line.strip() and not line.startswith("#")]
+-        symbols = sorted({s for s in raw if len(s) == 3 and s.isalpha()})
+-        if symbols:
+-            print(f"Đã nạp {len(symbols)} mã HOSE từ {symbols_file}.")
+-            return symbols
++    symbols = _load_symbols_file(symbols_file)
++    if symbols:
++        print(f"[CẢNH BÁO] API danh sách mã lỗi -> dùng {len(symbols)} mã từ {symbols_file}.")
++        return symbols
+ 
+-    print(f"Sử dụng danh sách mặc định ({len(FALLBACK_HOSE_SYMBOLS)} mã HOSE thanh khoản cao).")
++    if os.path.exists(cache_csv):
++        try:
++            cached = pd.read_csv(cache_csv, usecols=["symbol"])
++            symbols = sorted({str(s).upper() for s in cached["symbol"].dropna().unique() if len(str(s)) == 3 and str(s).isalpha()})
++            if symbols:
++                print(f"[CẢNH BÁO] API danh sách mã lỗi -> dùng {len(symbols)} mã đang có trong cache CSV.")
++                return symbols
++        except Exception as e:
++            print("Không đọc được symbol từ cache CSV:", e)
++
++    print(f"[CẢNH BÁO] Sử dụng danh sách mặc định ({len(FALLBACK_HOSE_SYMBOLS)} mã HOSE thanh khoản cao).")
+     return sorted(FALLBACK_HOSE_SYMBOLS)
+ 
+ 
++def _align_price_units(cached_df: pd.DataFrame, new_df: pd.DataFrame) -> pd.DataFrame:
++    """
++    Cache cũ (thời vnstock) lưu giá theo nghìn VND (vd 20.45), API Yuanta trả VND (20450).
++    Nếu để lẫn, MA200 sẽ sai hoàn toàn. So sánh phần ngày chồng lấn; nếu lệch ~1000 lần thì nhân cache lên 1000.
++    """
++    m = cached_df[["symbol", "time", "close"]].merge(
++        new_df[["symbol", "time", "close"]], on=["symbol", "time"], suffixes=("_old", "_new")
++    )
++    m = m[(m["close_old"] > 0) & (m["close_new"] > 0)]
++    if m.empty:
++        return cached_df
++    ratio = float((m["close_new"] / m["close_old"]).median())
++    if 900 <= ratio <= 1100:
++        print(f"[CẢNH BÁO] Cache lưu giá theo nghìn VND (tỷ lệ API/cache ≈ {ratio:.0f}). Đã nhân cache x1000 để đồng nhất đơn vị.")
++        cached_df = cached_df.copy()
++        for c in ("open", "high", "low", "close"):
++            if c in cached_df.columns:
++                cached_df[c] = cached_df[c] * 1000.0
++    return cached_df
++
++
+ def get_historical_data(client: YuantaClient, symbols, start_date: str, end_date: str, max_workers: int = 5):
+     """
+     Tải dữ liệu OHLCV từ Yuanta API kết hợp cache CSV cục bộ.
+@@ -98,14 +147,21 @@ def get_historical_data(client: YuantaClient, symbols, start_date: str, end_date
+             if completed % 10 == 0 or completed == total:
+                 print(f"Đã tải {completed}/{total} mã cổ phiếu...")
+ 
++    print(
++        f"Tổng kết tải giá: {len(all_data)}/{total} mã có dữ liệu | "
++        f"request lỗi={client.failed_requests} | JSON rỗng={client.empty_payloads}"
++    )
+     if not all_data:
+-        print("Không tải được dữ liệu mới từ Yuanta API.")
+-        return cached_df if cached_df is not None else pd.DataFrame()
++        # fetch_start luôn lùi 14 ngày so với cache => nếu API hoạt động thì CHẮC CHẮN có dữ liệu mới.
++        # Không có nghĩa là API hỏng -> dừng hẳn, tránh xuất bản biểu đồ cũ như thể là mới.
++        print("LỖI NGHIÊM TRỌNG: Không tải được dữ liệu mới từ Yuanta API (xem các dòng [YuantaClient] phía trên).")
++        sys.exit(1)
+ 
+     new_df = pd.concat(all_data, ignore_index=True)
+     new_df["time"] = pd.to_datetime(new_df["time"]).dt.date
+ 
+     if cached_df is not None:
++        cached_df = _align_price_units(cached_df, new_df)
+         full_df = pd.concat([cached_df, new_df], ignore_index=True)
+     else:
+         full_df = new_df
+@@ -226,13 +282,19 @@ def export_all_groups_json(
+     print(f"Đã xuất dữ liệu các nhóm ngành ra {output_json}")
+ 
+ 
++VNINDEX_CANDIDATES = ("VNINDEX", "VN-INDEX", "VNI")
++
++
+ def get_vnindex(client: YuantaClient, start_date: str, end_date: str) -> pd.DataFrame:
+-    """Lấy dữ liệu chỉ số VNINDEX từ Yuanta API."""
++    """Lấy dữ liệu chỉ số VNINDEX từ Yuanta API (thử lần lượt các mã chỉ số có thể có)."""
+     print("Lấy dữ liệu chỉ số VNINDEX từ Yuanta API...")
+-    df = client.get_price_history("VNINDEX", start_date, end_date)
+-    if df.empty:
+-        return pd.DataFrame()
+-    return df[["time", "close"]].rename(columns={"close": "VNINDEX"})
++    for code in VNINDEX_CANDIDATES:
++        df = client.get_price_history(code, start_date, end_date)
++        if not df.empty:
++            print(f"  VNINDEX lấy được qua mã '{code}': {len(df)} phiên, đến {df['time'].max()}.")
++            return df[["time", "close"]].rename(columns={"close": "VNINDEX"})
++        print(f"  Mã '{code}' không trả dữ liệu.")
++    return pd.DataFrame()
+ 
+ 
+ def get_vnindex_foreign(client: YuantaClient, start_date: str, end_date: str) -> pd.DataFrame:
+diff --git a/yuanta_client.py b/yuanta_client.py
+index f4ccf75..39ad41f 100644
+--- a/yuanta_client.py
++++ b/yuanta_client.py
+@@ -11,6 +11,7 @@ Thay thế hoàn toàn nguồn vnstock bằng hệ thống API của Yuanta Secu
+ from __future__ import annotations
+ 
+ import logging
++import threading
+ import time
+ from datetime import datetime, timedelta
+ from typing import Any, Dict, List, Optional
+@@ -26,6 +27,12 @@ BASE_URL = "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch"
+ PRICE_HISTORY_URL = f"{BASE_URL}/price_history/{{symbol}}"
+ FOREIGN_HISTORY_URL = f"{BASE_URL}/price_history_foreign/{{symbol}}"
+ LIST_STOCK_INFO_URL = "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info"
++# Host dự phòng (CHƯA được xác minh): cùng path nhưng trên host `ysradarapi` - host mà endpoint price_history
++# đang chạy ổn định từ GitHub Actions. Nếu host này không có endpoint, request sẽ lỗi và bị bỏ qua êm.
++LIST_STOCK_INFO_URLS = [
++    LIST_STOCK_INFO_URL,
++    "https://ysradarapi.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info",
++]
+ 
+ # Danh sách các bộ lọc chỉ số & nhóm ngành trên VN-Index / HOSE
+ INDEX_GROUPS = [
+@@ -53,9 +60,14 @@ INDEX_GROUPS = [
+     "VNUTI",        # Tiện ích
+ ]
+ 
++# Header giống một lần mở URL trực tiếp trên trình duyệt (đúng cách bạn test thành công):
++# KHÔNG có Origin/Referer. Hồ sơ "with_origin" chỉ dùng làm phương án dự phòng.
+ DEFAULT_HEADERS = {
+     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+     "Accept": "application/json, text/plain, */*",
++    "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
++}
++ORIGIN_HEADERS = {
+     "Origin": "https://ysradar.yuanta.com.vn",
+     "Referer": "https://ysradar.yuanta.com.vn/",
+ }
+@@ -94,22 +106,42 @@ def _validate_date(date_str: str) -> str:
+     return datetime.strptime(date_str.strip(), "%Y-%m-%d").strftime("%Y-%m-%d")
+ 
+ 
+-def _extract_records(payload: Any) -> List[Dict[str, Any]]:
+-    """Trích xuất danh sách bản ghi từ nhiều dạng cấu trúc JSON trả về của API."""
++_RECORD_KEYS = ("response", "data", "items", "records", "result", "results", "list", "rows")
++
++
++def _extract_records(payload: Any, _depth: int = 0) -> List[Dict[str, Any]]:
++    """
++    Trích xuất danh sách bản ghi (list[dict]) từ JSON của Yuanta.
++    Định dạng thực tế của Yuanta: {"success": true, "response": [ {...}, {...} ]}
++    Hàm tìm đệ quy theo các key phổ biến, cuối cùng quét mọi value dạng list[dict].
++    """
++    if _depth > 4:
++        return []
+     if isinstance(payload, list):
+-        return payload
++        return [x for x in payload if isinstance(x, dict)]
+     if isinstance(payload, dict):
+-        for key in ("data", "items", "records", "result", "results"):
+-            val = payload.get(key)
+-            if isinstance(val, list):
+-                return val
+-            if isinstance(val, dict):
+-                for sub_key in ("items", "records", "data", "list"):
+-                    if isinstance(val.get(sub_key), list):
+-                        return val[sub_key]
++        for key in _RECORD_KEYS:
++            if key in payload:
++                found = _extract_records(payload[key], _depth + 1)
++                if found:
++                    return found
++        for val in payload.values():
++            if isinstance(val, (list, dict)):
++                found = _extract_records(val, _depth + 1)
++                if found:
++                    return found
+     return []
+ 
+ 
++def _pick(item: Dict[str, Any], *names: str) -> Any:
++    """Lấy giá trị theo tên key KHÔNG phân biệt hoa/thường (API trả PascalCase: StockCode, SymbolType...)."""
++    lowered = {str(k).lower(): v for k, v in item.items()}
++    for n in names:
++        if n.lower() in lowered and lowered[n.lower()] not in (None, ""):
++            return lowered[n.lower()]
++    return None
++
++
+ class YuantaClient:
+     """Client giao tiếp với hệ thống API Yuanta Securities."""
+ 
+@@ -117,59 +149,90 @@ class YuantaClient:
+         self.session = _build_session()
+         self.timeout = timeout
+         self.rate_limit_delay = rate_limit_delay
++        self._lock = threading.Lock()
++        self.failed_requests = 0   # số request lỗi mạng/HTTP/không phải JSON
++        self.empty_payloads = 0    # số request trả JSON hợp lệ nhưng không có bản ghi
+ 
+-    def _get_json(self, url: str, params: Dict[str, Any]) -> Any:
++    def _count(self, attr: str) -> None:
++        with self._lock:
++            setattr(self, attr, getattr(self, attr) + 1)
++
++    def _get_json(self, url: str, params: Dict[str, Any], extra_headers: Optional[Dict[str, str]] = None) -> Any:
+         try:
+-            resp = self.session.get(url, params=params, timeout=self.timeout)
++            resp = self.session.get(url, params=params, headers=extra_headers, timeout=self.timeout)
+             resp.raise_for_status()
+-            return resp.json()
+         except requests.exceptions.Timeout:
++            self._count("failed_requests")
+             print(f"[YuantaClient] TIMEOUT khi gọi {url} params={params}")
+             return None
+         except requests.exceptions.HTTPError as exc:
++            self._count("failed_requests")
+             status = exc.response.status_code if exc.response is not None else "?"
+-            print(f"[YuantaClient] HTTP {status} khi gọi {url} params={params}: {exc}")
++            body = (exc.response.text[:150].replace("\n", " ") if exc.response is not None else "")
++            print(f"[YuantaClient] HTTP {status} khi gọi {url} params={params}: {body}")
+             return None
+         except requests.exceptions.RequestException as exc:
++            self._count("failed_requests")
+             print(f"[YuantaClient] Lỗi kết nối khi gọi {url}: {exc}")
+             return None
+-        except ValueError as exc:
+-            print(f"[YuantaClient] Lỗi parse JSON từ {url}: {exc}")
+-            return None
+         finally:
+             if self.rate_limit_delay > 0:
+                 time.sleep(self.rate_limit_delay)
+ 
++        # Parse JSON RIÊNG để phân biệt "lỗi mạng" với "server trả body rỗng/HTML" (WAF, chặn IP, geo-block...)
++        try:
++            return resp.json()
++        except ValueError:
++            self._count("failed_requests")
++            body = resp.text[:150].replace("\n", " ")
++            print(
++                f"[YuantaClient] Body KHÔNG phải JSON | url={resp.url} | HTTP {resp.status_code} | "
++                f"content-type={resp.headers.get('Content-Type')} | len={len(resp.content)} | body[:150]={body!r}"
++            )
++            return None
++
+     def get_index_symbols(self, index_code: str) -> List[str]:
+         """
+         Lấy danh sách mã cổ phiếu thuộc một sàn/chỉ số/nhóm ngành từ Yuanta API:
+         - Toàn sàn HOSE (HSX): ?exchange=HSX
+         - Chỉ số / nhóm ngành: ?index_code={INDEX_CODE}
++        Thử lần lượt: host chính -> host dự phòng, header kiểu trình duyệt -> header có Origin/Referer.
+         """
+         code = str(index_code).strip().upper()
+-        params = {"exchange": "HSX"} if code in ("HOSE", "HSX") else {"index_code": code}
+-        payload = self._get_json(LIST_STOCK_INFO_URL, params)
+-        records = _extract_records(payload)
++        is_exchange = code in ("HOSE", "HSX")
++        params = {"exchange": "HSX"} if is_exchange else {"index_code": code}
++
++        records: List[Dict[str, Any]] = []
++        for url in LIST_STOCK_INFO_URLS:
++            for extra in (None, ORIGIN_HEADERS):
++                payload = self._get_json(url, params, extra_headers=extra)
++                records = _extract_records(payload)
++                if records:
++                    break
++                if payload is not None:
++                    self._count("empty_payloads")
++                    print(f"[YuantaClient] JSON hợp lệ nhưng không có bản ghi cho {code} (params={params}). Sample: {str(payload)[:200]}")
++            if records:
++                break
+         if not records:
+-            if payload is not None:
+-                print(f"[YuantaClient] Không trích xuất được danh sách mã cho {code} (params={params}). Sample: {str(payload)[:200]}")
+             return []
+ 
+         symbols: List[str] = []
+         for item in records:
+-            if not isinstance(item, dict):
++            sym = _pick(item, "StockCode", "symbol", "stock_code", "code", "ticker")
++            if not sym:
+                 continue
+-            sym = (
+-                item.get("symbol")
+-                or item.get("stockCode")
+-                or item.get("stock_code")
+-                or item.get("code")
+-                or item.get("ticker")
+-            )
+-            if sym:
+-                sym_str = str(sym).strip().upper()
+-                if len(sym_str) == 3 and sym_str.isalpha():
+-                    symbols.append(sym_str)
++            # Chỉ lấy cổ phiếu thường (SymbolType = "ST"); loại CW, ETF, trái phiếu...
++            sym_type = _pick(item, "SymbolType")
++            if sym_type is not None and str(sym_type).strip().upper() != "ST":
++                continue
++            # Với toàn sàn HOSE, loại mã không thuộc HSX (phòng khi API trả lẫn)
++            exch = _pick(item, "Exchange")
++            if is_exchange and exch is not None and str(exch).strip().upper() not in ("HSX", "HOSE"):
++                continue
++            sym_str = str(sym).strip().upper()
++            if len(sym_str) == 3 and sym_str.isalpha():
++                symbols.append(sym_str)
+         return sorted(set(symbols))
+ 
+     def get_all_index_groups(self, groups: Optional[List[str]] = None) -> Dict[str, List[str]]:
+@@ -316,12 +379,12 @@ class YuantaClient:
+                 break
+ 
+         mapping_candidates = {
+-            "foreign_buy_vol": ["foreignbuyvol", "foreign_buy_vol", "buyvol", "buy_vol", "f_buy_vol"],
+-            "foreign_sell_vol": ["foreignsellvol", "foreign_sell_vol", "sellvol", "sell_vol", "f_sell_vol"],
+-            "foreign_net_vol": ["foreignnetvol", "foreign_net_vol", "netvol", "net_vol", "f_net_vol"],
+-            "foreign_buy_val": ["foreignbuyval", "foreign_buy_val", "buyval", "buy_val", "f_buy_val"],
+-            "foreign_sell_val": ["foreignsellval", "foreign_sell_val", "sellval", "sell_val", "f_sell_val"],
+-            "foreign_net_val": ["foreignnetval", "foreign_net_val", "netval", "net_val", "f_net_val"],
++            "foreign_buy_vol": ["foreignbuyvol", "foreignvolumebuy", "foreign_buy_vol", "buyvol", "buy_vol", "f_buy_vol"],
++            "foreign_sell_vol": ["foreignsellvol", "foreignvolumesell", "foreign_sell_vol", "sellvol", "sell_vol", "f_sell_vol"],
++            "foreign_net_vol": ["foreignnetvol", "foreignvolumenet", "foreign_net_vol", "netvol", "net_vol", "f_net_vol"],
++            "foreign_buy_val": ["foreignbuyval", "foreignvaluebuy", "foreignbuyvalue", "foreign_buy_val", "buyval", "buy_val", "f_buy_val"],
++            "foreign_sell_val": ["foreignsellval", "foreignvaluesell", "foreignsellvalue", "foreign_sell_val", "sellval", "sell_val", "f_sell_val"],
++            "foreign_net_val": ["foreignnetval", "foreignvaluenet", "foreignnetvalue", "foreign_net_val", "netval", "net_val", "f_net_val"],
+         }
+         for target, cands in mapping_candidates.items():
+             for cand in cands:

@@ -1,0 +1,64 @@
+name: Fetch Index OHLCV (Yuanta TradingView)
+
+# Tải OHLCV ngày của TẤT CẢ các chỉ số (VNINDEX, VN30, VNREAL, VNHEAL, ...) -> data/index_ohlcv.csv
+# và ghi báo cáo chẩn đoán -> data/index_fetch_report.json (commit vào repo để đọc mà không cần mở log).
+on:
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Tải lại toàn bộ lịch sử từ 2010 (mặc định: chỉ tải bù nếu đã có dữ liệu)"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "35 8 * * 1-5"      # 15:35 (UTC+7) các ngày trong tuần - sau khi chốt phiên 15:00
+
+permissions:
+  contents: write
+
+# Dùng chung nhóm với workflow chính để hai workflow không commit chồng lên nhau
+concurrency:
+  group: data-commit
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas requests
+
+      - name: Fetch index OHLCV (probe + tải + báo cáo)
+        id: fetch
+        continue-on-error: true      # vẫn commit báo cáo chẩn đoán khi thất bại
+        run: |
+          if [ "${{ github.event.inputs.full }}" = "true" ]; then FULL="--full"; else FULL=""; fi
+          python scripts/fetch_index_ohlcv.py $FULL
+
+      - name: Commit data + báo cáo
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f data/index_ohlcv.csv data/index_fetch_report.json 2>/dev/null || true
+          git commit -m "Update index OHLCV + fetch report [skip ci]" || echo "No changes to commit"
+          git pull --rebase --autostash origin main || true
+          git push
+
+      - name: Báo lỗi nếu không tải được chỉ số nào
+        if: steps.fetch.outcome == 'failure'
+        run: |
+          echo "Không tải được OHLCV chỉ số nào. Xem data/index_fetch_report.json (đã commit) để biết nguyên nhân."
+          exit 1
