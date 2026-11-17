@@ -223,6 +223,12 @@ def process_data(full_df: pd.DataFrame) -> pd.DataFrame:
     return daily_stats
 
 
+INDEX_HOVER = (
+    "<b>{label}</b> %{{y:,.2f}}<br>O %{{customdata[0]:,.2f}} · H %{{customdata[1]:,.2f}} · L %{{customdata[2]:,.2f}}"
+    "<br>Vol %{{customdata[3]:,.0f}}<extra></extra>"
+)
+
+
 def _breadth_signals(stats: pd.DataFrame, index_by_time: pd.Series, foreign_by_time: pd.Series, has_foreign: bool):
     """Điểm Mua/Bán: MA20 cắt MA50 (breadth) + bộ lọc dòng tiền ngoại toàn thị trường (nếu có). Đặt tại điểm số của chỉ số."""
     df = stats[["time", "breadth_buy_cross", "breadth_sell_cross"]].copy()
@@ -267,6 +273,12 @@ def export_all_groups_json(
         m = base.merge(ser, on="time", how="left")
         return m["close"], ser
 
+    def _ohlcv(code: str):
+        """open/high/low/volume căn theo trục ngày của biểu đồ (None nếu ngày đó chưa có OHLCV)."""
+        m = base.merge(store.ohlcv_series(code), on="time", how="left")
+        r = lambda col, nd: [round(float(v), nd) if pd.notna(v) else None for v in m[col]]
+        return {"o": r("open", 2), "h": r("high", 2), "l": r("low", 2), "v": [int(v) if pd.notna(v) else None for v in m["volume"]]}
+
     hose_idx, _ = _points(group_index_code("HOSE"))
     payload = {
         "dates": [d.strftime("%Y-%m-%d") for d in base["time"]],
@@ -298,6 +310,7 @@ def export_all_groups_json(
             "index_code": code,
             "index_points": [round(float(v), 2) if pd.notna(v) else None for v in pts],
             "index_snapshot": store.snapshot_for(code),
+            "index_ohlcv": _ohlcv(code),
             "pct_MA10": r2("pct_MA10"), "pct_MA20": r2("pct_MA20"),
             "pct_MA50": r2("pct_MA50"), "pct_MA200": r2("pct_MA200"),
             "buy": buy, "sell": sell,
@@ -312,13 +325,13 @@ def export_all_groups_json(
 
 
 def get_vnindex(store: IndexStore) -> pd.DataFrame:
-    """Điểm VN-Index từ kho lịch sử (đã tích luỹ từ Yuanta index_transaction) -> [time, VNINDEX]."""
-    ser = store.series(group_index_code("HOSE"))
+    """VN-Index từ kho (OHLCV TradingView + snapshot) -> [time, VNINDEX, idx_open, idx_high, idx_low, idx_volume]."""
+    ser = store.ohlcv_series(group_index_code("HOSE"))
     if ser.empty:
-        print("[CẢNH BÁO] Chưa có điểm VN-Index nào (index_transaction lỗi và kho lịch sử rỗng).")
+        print("[CẢNH BÁO] Chưa có điểm VN-Index nào (TradingView/index_transaction đều lỗi và kho rỗng).")
         return pd.DataFrame(columns=["time", "VNINDEX"])
     print(f"VN-Index: {len(ser)} phiên trong kho, từ {ser['time'].min()} đến {ser['time'].max()}, điểm gần nhất {ser['close'].iloc[-1]}.")
-    return ser.rename(columns={"close": "VNINDEX"})
+    return ser.rename(columns={"close": "VNINDEX", "open": "idx_open", "high": "idx_high", "low": "idx_low", "volume": "idx_volume"})
 
 
 def get_vnindex_foreign(client: YuantaClient, start_date: str, end_date: str) -> pd.DataFrame:
@@ -378,6 +391,8 @@ def plot_market_breadth(
             x=df["time"],
             y=df["VNINDEX"],
             name="VN-Index (Pts, left axis)",
+            customdata=df[["idx_open", "idx_high", "idx_low", "idx_volume"]].to_numpy() if all(c in df.columns for c in ("idx_open", "idx_high", "idx_low", "idx_volume")) else None,
+            hovertemplate=INDEX_HOVER.format(label="VN-Index"),
             mode="lines" if df["VNINDEX"].notna().sum() > 30 else "lines+markers",
             line=dict(color="purple", width=2),
         ),
