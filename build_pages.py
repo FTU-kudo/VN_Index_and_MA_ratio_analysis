@@ -297,7 +297,12 @@ window.BREADTH_DATA = {groups_json};
     var label = indexLabel(groupCode);
     var idxTrace = findTraceIndices(gdiv, 'PTS, LEFT AXIS');
     if (idxTrace.length > 0 && gData.index_points) {
-      Plotly.restyle(gdiv, { x: [dates], y: [gData.index_points], name: [label + ' (Pts, left axis)'] }, idxTrace);
+      var oh = gData.index_ohlcv;
+      var cd = oh ? dates.map(function (_, i) { return [oh.o[i], oh.h[i], oh.l[i], oh.v[i]]; }) : null;
+      var tpl = '<b>' + label + '</b> %{y:,.2f}<br>O %{customdata[0]:,.2f} · H %{customdata[1]:,.2f} · L %{customdata[2]:,.2f}' +
+                '<br>Vol %{customdata[3]:,.0f}<extra></extra>';
+      Plotly.restyle(gdiv, { x: [dates], y: [gData.index_points], name: [label + ' (Pts, left axis)'],
+                             customdata: [cd], hovertemplate: [tpl] }, idxTrace);
     }
     // Tín hiệu Mua/Bán đặt đúng tại điểm số của chỉ số đang chọn
     var buyT = findTraceIndices(gdiv, 'BUY SIGNAL');
