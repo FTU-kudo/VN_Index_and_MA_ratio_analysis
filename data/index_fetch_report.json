@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-17 16:47:24 +0700",
+  "generated_at": "2026-11-18 00:50:48 +0700",
   "runner": {
     "country": "US",
-    "region": "Washington",
+    "region": "California",
     "org": "AS8075 Microsoft Corporation"
   },
   "probes": [
@@ -14,7 +14,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 280
+        "bytes": 278
       },
       "status": 200,
       "content_type": "application/json",
@@ -23,7 +23,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 215347,
-      "elapsed_s": 2.71,
+      "elapsed_s": 3.16,
       "body_head": "{\"success\":true,\"response\":[{\"StockCode\":\"AAA\",\"Exchange\":\"HSX\",\"SymbolType\":\"ST\",\"RefP\":6820,\"CeilingP\":7290,\"FloorP\":6350,\"HighestP\":6870,\"LowestP\":6800,\"OpenP\":6870,\"AvgP\":6835.01,\"LastMP\":6830,\"LastMVol\":500,\"DeemP\":6830,\"DeemVol\":13200,\"TotalVol\":346300,\"TotalVal\":2366964000,\"FTBuyVol\":0,\"FTSel",
       "json_s": null,
       "n_records": 410,
@@ -35,7 +35,7 @@
       "params": null,
       "challenge_followed": {
         "status": 200,
-        "bytes": 277
+        "bytes": 275
       },
       "status": 200,
       "content_type": "application/json",
@@ -44,7 +44,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 19972,
-      "elapsed_s": 1.33,
+      "elapsed_s": 1.51,
       "body_head": "{\"success\":true,\"response\":{\"IndexCode\":\"VNINDEX\",\"IndexName\":\"VN-INDEX\",\"RefIndex\":1736.89,\"CurrIndex\":1726.72,\"Ceiling\":3,\"Up\":110,\"NoChange\":62,\"Down\":207,\"Floor\":8,\"TotalVolTrade\":636279717,\"TotalValTrade\":14961453458884.0,\"TotalRecords\":347,\"CurrTradingSessionID\":\"99\",\"ListTransaction\":[{\"Index",
       "json_s": null,
       "n_bars": 0
@@ -61,7 +61,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 305
+        "bytes": 309
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -70,7 +70,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 0.79,
+      "elapsed_s": 1.48,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -90,7 +90,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 305
+        "bytes": 307
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -99,7 +99,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.62,
+      "elapsed_s": 1.83,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -119,7 +119,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 307
+        "bytes": 305
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -128,7 +128,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 1.06,
+      "elapsed_s": 1.22,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -157,7 +157,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.28,
+      "elapsed_s": 2.09,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -177,7 +177,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 307
+        "bytes": 305
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -186,7 +186,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 0.86,
+      "elapsed_s": 1.06,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -206,7 +206,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 307
+        "bytes": 305
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -215,7 +215,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.46,
+      "elapsed_s": 1.95,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -244,7 +244,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 1.01,
+      "elapsed_s": 1.23,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -273,7 +273,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.46,
+      "elapsed_s": 1.76,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -293,7 +293,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 307
+        "bytes": 305
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -302,7 +302,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 0.99,
+      "elapsed_s": 1.39,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -322,7 +322,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 305
+        "bytes": 307
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -331,7 +331,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.49,
+      "elapsed_s": 1.63,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -351,7 +351,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 305
+        "bytes": 307
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -360,7 +360,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 0.79,
+      "elapsed_s": 1.03,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -380,7 +380,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 307
+        "bytes": 305
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -389,7 +389,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.54,
+      "elapsed_s": 1.62,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -418,7 +418,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 1.09,
+      "elapsed_s": 1.06,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -438,7 +438,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 305
+        "bytes": 307
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -447,7 +447,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.47,
+      "elapsed_s": 2.09,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -462,8 +462,18 @@
         "from_date": "2026-11-01",
         "to_date": "2026-11-17"
       },
-      "error": "ConnectTimeout: HTTPSConnectionPool(host='ysradarapi.yuanta.com.vn', port=443): Max retries exceeded with url: /api/v3/market_data/market_watch/price_history/VNINDEX?from_date=2026-11-01&to_date=2026-11-17 (Caused by ConnectTimeoutError(<HTTPSConnection(host='ysradarapi.yuanta.com.vn', port=443) at 0x7351013d3670>, 'Connection to ysradarapi.yuanta.com.vn timed out. (connect timeout=8)'))",
-      "elapsed_s": 16.35
+      "challenge_followed": null,
+      "status": 200,
+      "content_type": "application/json",
+      "server": "nginx/1.24.0",
+      "cf_ray": null,
+      "via": null,
+      "redirects": [],
+      "bytes": 101,
+      "elapsed_s": 0.92,
+      "body_head": "{\"success\":false,\"response\":null,\"error\":{\"error_code\":1004,\"message\":\"Invalid stock code: VNINDEX\"}}",
+      "json_s": null,
+      "n_bars": 0
     },
     {
       "name": "disc_price_history_VN30",
@@ -472,8 +482,18 @@
         "from_date": "2026-11-01",
         "to_date": "2026-11-17"
       },
-      "error": "ConnectTimeout: HTTPSConnectionPool(host='ysradarapi.yuanta.com.vn', port=443): Max retries exceeded with url: /api/v3/market_data/market_watch/price_history/VN30?from_date=2026-11-01&to_date=2026-11-17 (Caused by ConnectTimeoutError(<HTTPSConnection(host='ysradarapi.yuanta.com.vn', port=443) at 0x7351013d1e40>, 'Connection to ysradarapi.yuanta.com.vn timed out. (connect timeout=8)'))",
-      "elapsed_s": 16.2
+      "challenge_followed": null,
+      "status": 200,
+      "content_type": "application/json",
+      "server": "nginx/1.24.0",
+      "cf_ray": null,
+      "via": null,
+      "redirects": [],
+      "bytes": 98,
+      "elapsed_s": 0.94,
+      "body_head": "{\"success\":false,\"response\":null,\"error\":{\"error_code\":1004,\"message\":\"Invalid stock code: VN30\"}}",
+      "json_s": null,
+      "n_bars": 0
     }
   ],
   "winner": {
@@ -507,135 +527,135 @@
   ],
   "per_code": {
     "VN100": {
-      "fetched": 4206,
-      "from": "2010-01-01",
-      "first": "2010-01-04",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VN30": {
-      "fetched": 4206,
-      "from": "2010-01-01",
-      "first": "2010-01-04",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNALL": {
-      "fetched": 4206,
-      "from": "2010-01-01",
-      "first": "2010-01-04",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNCOND": {
-      "fetched": 2697,
-      "from": "2010-01-01",
-      "first": "2016-01-25",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNCONS": {
-      "fetched": 2697,
-      "from": "2010-01-01",
-      "first": "2016-01-25",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNDIAMOND": {
-      "fetched": 1742,
-      "from": "2010-01-01",
-      "first": "2019-11-21",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNENE": {
-      "fetched": 2697,
-      "from": "2010-01-01",
-      "first": "2016-01-25",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNFIN": {
-      "fetched": 2697,
-      "from": "2010-01-01",
-      "first": "2016-01-25",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNFINLEAD": {
-      "fetched": 1742,
-      "from": "2010-01-01",
-      "first": "2019-11-21",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNFINSELECT": {
-      "fetched": 1742,
-      "from": "2010-01-01",
-      "first": "2019-11-21",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNHEAL": {
-      "fetched": 2697,
-      "from": "2010-01-01",
-      "first": "2016-01-25",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNIND": {
-      "fetched": 2697,
-      "from": "2010-01-01",
-      "first": "2016-01-25",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNINDEX": {
-      "fetched": 4207,
-      "from": "2010-01-01",
-      "first": "2010-01-04",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNIT": {
-      "fetched": 2563,
-      "from": "2010-01-01",
-      "first": "2016-08-10",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNMAT": {
-      "fetched": 2697,
-      "from": "2010-01-01",
-      "first": "2016-01-25",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNMID": {
-      "fetched": 4206,
-      "from": "2010-01-01",
-      "first": "2010-01-04",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNREAL": {
-      "fetched": 2697,
-      "from": "2010-01-01",
-      "first": "2016-01-25",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNSI": {
-      "fetched": 2325,
-      "from": "2010-01-01",
-      "first": "2017-07-24",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNSML": {
-      "fetched": 4206,
-      "from": "2010-01-01",
-      "first": "2010-01-04",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNUTI": {
-      "fetched": 2697,
-      "from": "2010-01-01",
-      "first": "2016-01-25",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNX50": {
-      "fetched": 2325,
-      "from": "2010-01-01",
-      "first": "2017-07-24",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     },
     "VNXALL": {
-      "fetched": 2511,
-      "from": "2010-01-01",
-      "first": "2016-10-24",
+      "fetched": 7,
+      "from": "2026-11-07",
+      "first": "2026-11-09",
       "last": "2026-11-17"
     }
   },
