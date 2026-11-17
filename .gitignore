@@ -200,3 +200,8 @@ docs/.DS_Store
 
 # Index history csv
 !data/index_history.csv
+
+# Dữ liệu chỉ số (do workflow cập nhật)
+!data/index_history.csv
+!data/index_ohlcv.csv
+!data/index_fetch_report.json
