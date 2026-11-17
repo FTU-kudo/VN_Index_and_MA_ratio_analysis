@@ -5,7 +5,11 @@ from unittest.mock import MagicMock
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
-from index_store import IndexStore, group_index_code
+from index_store import IndexStore as _IS, group_index_code
+
+
+def IndexStore(path):
+    return _IS(path, path.replace('.csv', '_ohlcv.csv'))
 from yuanta_client import VN_TZ, YuantaClient
 
 def _payload(day: datetime, close=3276.85):
