@@ -5,7 +5,11 @@ from unittest.mock import MagicMock
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
-from index_store import IndexStore
+from index_store import IndexStore as _IS
+
+
+def IndexStore(path, ohlcv=None):
+    return _IS(path, ohlcv or path.replace('.csv', '_ohlcv.csv'))
 from yuanta_client import VN_TZ, YuantaClient
 
 VNINDEX = {"s": "ok", "bars": [
@@ -48,10 +52,10 @@ def test_store_full_then_incremental(tmp_path):
     c = _client(bars); path = str(tmp_path / "h.csv")
     st = IndexStore(path); st.update_from_history(c, ["VNINDEX"])
     assert c.session.get.call_args.kwargs["params"]["from"] == 1262304000      # lần đầu: tải đủ
-    assert len(IndexStore(path).df) == 40
+    assert len(IndexStore(path).ohl) == 40
     st2 = IndexStore(path); st2.update_from_history(c, ["VNINDEX"], overlap_days=2)
     assert c.session.get.call_args.kwargs["params"]["from"] > 1262304000        # lần sau: chỉ tải bù
-    assert len(st2.df) == 40                                                   # idempotent
+    assert len(st2.ohl) == 40                                                   # idempotent
 
 def test_today_before_close_is_provisional_not_persisted(tmp_path):
     now = datetime.now(VN_TZ)
@@ -60,7 +64,7 @@ def test_today_before_close_is_provisional_not_persisted(tmp_path):
     t = int(now.replace(hour=7, minute=0, second=0, microsecond=0).timestamp())
     c = _client({"s": "ok", "bars": [{"t": t - 86400 * 3, "c": 1700.0}, {"t": t, "c": 1710.0}]})
     st = IndexStore(str(tmp_path / "h.csv")); st.update_from_history(c, ["VNINDEX"])
-    assert len(st.df) == 1 and st.series("VNINDEX")["close"].iloc[-1] == 1710.0
+    assert len(st.ohl) == 1 and st.series("VNINDEX")["close"].iloc[-1] == 1710.0
     snap = st.snapshot_for("VNINDEX")
     assert snap["derived"] and snap["change"] == 10.0 and snap["is_final"] is False
 
@@ -73,7 +77,7 @@ def test_snapshot_does_not_override_tradingview(tmp_path, capsys):
             "up": 1, "down": 1, "no_change": 0, "is_final": True}
     client = MagicMock(); client.get_index_snapshot.return_value = snap
     st.update_from_api(client, ["VNINDEX"])
-    assert st.df["close"].iloc[0] == 1700.0 and "khác" in capsys.readouterr().out
+    assert st.ohl["close"].iloc[0] == 1700.0 and st.df.empty and "khác" in capsys.readouterr().out
 
 
 def test_snapshot_only_rows_do_not_block_full_history(tmp_path):
@@ -85,3 +89,22 @@ def test_snapshot_only_rows_do_not_block_full_history(tmp_path):
     c = _client(VNINDEX)
     IndexStore(path).update_from_history(c, ["VNINDEX"])
     assert c.session.get.call_args.kwargs["params"]["from"] == 1262304000
+
+
+def test_series_merges_ohlcv_primary_with_history_gap_fill(tmp_path):
+    st = IndexStore(str(tmp_path / "h.csv"))
+    st.upsert_ohlcv(pd.DataFrame({"time": ["2026-11-12", "2026-11-13"], "code": "VNINDEX", "open": [1.0, 2.0], "high": [3.0, 4.0],
+                                  "low": [0.5, 1.5], "close": [1700.0, 1710.0], "volume": [100, 200]}))
+    st.upsert(pd.DataFrame({"time": ["2026-11-13", "2026-11-16"], "code": "VNINDEX", "close": [9999.0, 1736.89], "ref": [None, 1734.93],
+                            "source": "yuanta_index_transaction"}))
+    o = st.ohlcv_series("VNINDEX")
+    assert o["close"].tolist() == [1700.0, 1710.0, 1736.89]          # OHLCV thắng history ở 13/11; history lấp 16/11
+    assert o["volume"].tolist()[:2] == [100, 200] and pd.isna(o["open"].iloc[-1])
+
+
+def test_circuit_breaker_stops_after_three_failures(tmp_path):
+    c = YuantaClient(rate_limit_delay=0)
+    c.get_index_history = MagicMock(return_value=pd.DataFrame())
+    st = IndexStore(str(tmp_path / "h.csv"))
+    st.update_from_history(c, ["A", "B", "C", "D", "E", "F"])
+    assert c.get_index_history.call_count == 3 and st.stats["F"]["skipped"] == "circuit_breaker"
