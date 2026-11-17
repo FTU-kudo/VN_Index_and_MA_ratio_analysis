@@ -25,7 +25,7 @@ import requests
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from index_store import OHLCV_CSV, IndexStore, group_index_code  # noqa: E402
-from yuanta_client import INDEX_GROUPS, VN_TZ, YuantaClient  # noqa: E402
+from yuanta_client import INDEX_GROUPS, MAX_CHALLENGE_HOPS, VN_TZ, YuantaClient, challenge_url  # noqa: E402
 
 REPORT_JSON = "data/index_fetch_report.json"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
@@ -61,7 +61,16 @@ def probe(name: str, url: str, params=None, headers=None, timeout=(8, 30)) -> di
     info = {"name": name, "url": url, "params": params}
     t0 = time.time()
     try:
-        r = requests.get(url, params=params, headers=headers, timeout=timeout)
+        sess = requests.Session()
+        r = sess.get(url, params=params, headers=headers, timeout=timeout)
+        first_hop = None
+        for _ in range(MAX_CHALLENGE_HOPS):   # trang chống bot "Attention Required" -> đi theo jskey như trình duyệt
+            href = challenge_url(r.text)
+            if not href:
+                break
+            first_hop = first_hop or {"status": r.status_code, "bytes": len(r.content)}
+            r = sess.get(href, headers=headers, timeout=timeout)
+        info["challenge_followed"] = first_hop
         info.update({
             "status": r.status_code, "content_type": r.headers.get("Content-Type"),
             "server": r.headers.get("Server"), "cf_ray": r.headers.get("CF-RAY"), "via": r.headers.get("Via"),
@@ -120,7 +129,7 @@ def run_probes() -> tuple[list[dict], dict | None]:
 
 def _print_probe(p: dict) -> None:
     """In đủ thông tin vào log để đọc được ngay cả khi không commit được báo cáo."""
-    print(f"  probe {p['name']}: status={p.get('status')} s={p.get('json_s')} bars={p.get('n_bars')} rec={p.get('n_records')} "
+    print(f"  probe {p['name']}: challenge={'có' if p.get('challenge_followed') else 'không'} status={p.get('status')} s={p.get('json_s')} bars={p.get('n_bars')} rec={p.get('n_records')} "
           f"ct={p.get('content_type')} bytes={p.get('bytes')} err={p.get('error')}")
     if p.get("body_head") and not (p.get("json_s") == "ok" or p.get("n_records")):
         print(f"      body: {p['body_head'][:160]!r}")
