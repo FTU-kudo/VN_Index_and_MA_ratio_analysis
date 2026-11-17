@@ -36,19 +36,22 @@ def test_request_params_match_yuanta_url():
     c = _client(VNINDEX); c.get_index_history("VNINDEX", "2010-01-01")
     params = c.session.get.call_args.kwargs["params"]
     assert params["symbol"] == "VNINDEX" and params["resolution"] == "1D" and params["limit"] == 100000
-    assert params["from"] == 1262278800  # 2010-01-01 00:00 UTC+7
+    assert params["from"] == 1262304000  # 2010-01-01 00:00 UTC, đúng như URL bạn đã test
+    assert params["to"] % 86400 == 0 and params["to"] > params["from"]
 
 def test_no_data_returns_empty():
     assert _client({"s": "no_data"}).get_index_history("XYZ").empty
     assert _client({"s": "ok", "bars": []}).get_index_history("XYZ").empty
 
 def test_store_full_then_incremental(tmp_path):
-    c = _client(VNINDEX); path = str(tmp_path / "h.csv")
+    bars = {"s": "ok", "bars": [{"t": 1262563200 + 86400 * i, "c": 500.0 + i} for i in range(40)]}
+    c = _client(bars); path = str(tmp_path / "h.csv")
     st = IndexStore(path); st.update_from_history(c, ["VNINDEX"])
-    assert len(IndexStore(path).df) == 4
+    assert c.session.get.call_args.kwargs["params"]["from"] == 1262304000      # lần đầu: tải đủ
+    assert len(IndexStore(path).df) == 40
     st2 = IndexStore(path); st2.update_from_history(c, ["VNINDEX"], overlap_days=2)
-    assert c.session.get.call_args.kwargs["params"]["from"] > 1262278800   # lần 2 chỉ tải bù
-    assert len(st2.df) == 4                                               # idempotent
+    assert c.session.get.call_args.kwargs["params"]["from"] > 1262304000        # lần sau: chỉ tải bù
+    assert len(st2.df) == 40                                                   # idempotent
 
 def test_today_before_close_is_provisional_not_persisted(tmp_path):
     now = datetime.now(VN_TZ)
@@ -71,3 +74,14 @@ def test_snapshot_does_not_override_tradingview(tmp_path, capsys):
     client = MagicMock(); client.get_index_snapshot.return_value = snap
     st.update_from_api(client, ["VNINDEX"])
     assert st.df["close"].iloc[0] == 1700.0 and "khác" in capsys.readouterr().out
+
+
+def test_snapshot_only_rows_do_not_block_full_history(tmp_path):
+    """Lỗi từng gặp: kho chỉ có dòng snapshot 1 ngày -> code tưởng đã có lịch sử và chỉ tải bù 10 ngày."""
+    path = str(tmp_path / "h.csv")
+    st = IndexStore(path)
+    st.upsert(pd.DataFrame({"time": ["2026-11-16"], "code": ["VNINDEX"], "close": [1736.89], "ref": [1734.93], "source": ["yuanta_index_transaction"]}))
+    st.save()
+    c = _client(VNINDEX)
+    IndexStore(path).update_from_history(c, ["VNINDEX"])
+    assert c.session.get.call_args.kwargs["params"]["from"] == 1262304000
