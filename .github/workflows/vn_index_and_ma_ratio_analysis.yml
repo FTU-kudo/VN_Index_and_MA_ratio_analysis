@@ -15,6 +15,11 @@ on:
           - send-email
 permissions:
   contents: write
+
+concurrency:
+  group: data-commit
+  cancel-in-progress: false
+
 jobs:
   build:
     if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.mode == 'both' || github.event.inputs.mode == 'build' }}
@@ -76,6 +81,7 @@ jobs:
           git add hose_symbols.txt 2>/dev/null || true
           git add -f data/index_history.csv 2>/dev/null || true
           git commit -m "Auto-generated analysis report [skip ci]" || echo "No changes to commit"
+          git pull --rebase --autostash origin main || true
           git push
 
       - name: Upload PDFs as artifact
