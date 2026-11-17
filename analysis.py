@@ -15,6 +15,7 @@ import pandas as pd
 import plotly.graph_objects as plotly_go
 from plotly.subplots import make_subplots
 
+from index_store import IndexStore, group_index_code
 from yuanta_client import FALLBACK_HOSE_SYMBOLS, INDEX_GROUPS, YuantaClient
 
 if sys.platform == "win32":
@@ -28,11 +29,25 @@ except ImportError:
     pass
 
 
-def get_hose_symbols(client: YuantaClient | None = None, symbols_file: str = "hose_symbols.txt"):
+def _load_symbols_file(path: str):
+    if not os.path.exists(path):
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        raw = [line.strip().upper() for line in f if line.strip() and not line.startswith("#")]
+    return sorted({s for s in raw if len(s) == 3 and s.isalpha()})
+
+
+def get_hose_symbols(
+    client: YuantaClient | None = None,
+    symbols_file: str = "hose_symbols.txt",
+    cache_csv: str = "hose_6years_data.csv",
+):
     """
-    Lấy danh sách ~400 cổ phiếu HOSE hợp lệ (3 ký tự chữ cái viết hoa).
-    Ưu tiên lấy trực tiếp từ Yuanta API (`HOSE` / `VNALL`), sau đó mới fallback
-    sang `hose_symbols.txt` hoặc `FALLBACK_HOSE_SYMBOLS`.
+    Lấy danh sách cổ phiếu HOSE hợp lệ (3 ký tự chữ cái viết hoa). Thứ tự ưu tiên:
+      1. Yuanta API (list_stock_info?exchange=HSX)  -> thành công thì lưu lại vào hose_symbols.txt
+      2. hose_symbols.txt (snapshot của lần chạy thành công gần nhất)
+      3. Các mã đang có trong cache CSV (tránh tụt từ ~400 mã xuống 60 mã khi API danh sách lỗi)
+      4. FALLBACK_HOSE_SYMBOLS (60 mã thanh khoản cao)
     """
     print("Bước 1: Lấy danh sách cổ phiếu HOSE...")
     if client is not None:
@@ -40,18 +55,53 @@ def get_hose_symbols(client: YuantaClient | None = None, symbols_file: str = "ho
             symbols = client.get_index_symbols(code)
             if symbols:
                 print(f"Đã lấy {len(symbols)} mã HOSE từ Yuanta API (index_code={code}).")
+                if code == "HOSE":
+                    try:
+                        with open(symbols_file, "w", encoding="utf-8") as f:
+                            f.write(f"# Auto-generated {datetime.now(ZoneInfo('Asia/Ho_Chi_Minh')):%Y-%m-%d} from Yuanta list_stock_info?exchange=HSX\n")
+                            f.write("\n".join(symbols) + "\n")
+                    except OSError as e:
+                        print("Không ghi được hose_symbols.txt:", e)
                 return symbols
 
-    if os.path.exists(symbols_file):
-        with open(symbols_file, "r", encoding="utf-8") as f:
-            raw = [line.strip().upper() for line in f if line.strip() and not line.startswith("#")]
-        symbols = sorted({s for s in raw if len(s) == 3 and s.isalpha()})
-        if symbols:
-            print(f"Đã nạp {len(symbols)} mã HOSE từ {symbols_file}.")
-            return symbols
+    symbols = _load_symbols_file(symbols_file)
+    if symbols:
+        print(f"[CẢNH BÁO] API danh sách mã lỗi -> dùng {len(symbols)} mã từ {symbols_file}.")
+        return symbols
 
-    print(f"Sử dụng danh sách mặc định ({len(FALLBACK_HOSE_SYMBOLS)} mã HOSE thanh khoản cao).")
+    if os.path.exists(cache_csv):
+        try:
+            cached = pd.read_csv(cache_csv, usecols=["symbol"])
+            symbols = sorted({str(s).upper() for s in cached["symbol"].dropna().unique() if len(str(s)) == 3 and str(s).isalpha()})
+            if symbols:
+                print(f"[CẢNH BÁO] API danh sách mã lỗi -> dùng {len(symbols)} mã đang có trong cache CSV.")
+                return symbols
+        except Exception as e:
+            print("Không đọc được symbol từ cache CSV:", e)
+
+    print(f"[CẢNH BÁO] Sử dụng danh sách mặc định ({len(FALLBACK_HOSE_SYMBOLS)} mã HOSE thanh khoản cao).")
     return sorted(FALLBACK_HOSE_SYMBOLS)
+
+
+def _align_price_units(cached_df: pd.DataFrame, new_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Cache cũ (thời vnstock) lưu giá theo nghìn VND (vd 20.45), API Yuanta trả VND (20450).
+    Nếu để lẫn, MA200 sẽ sai hoàn toàn. So sánh phần ngày chồng lấn; nếu lệch ~1000 lần thì nhân cache lên 1000.
+    """
+    m = cached_df[["symbol", "time", "close"]].merge(
+        new_df[["symbol", "time", "close"]], on=["symbol", "time"], suffixes=("_old", "_new")
+    )
+    m = m[(m["close_old"] > 0) & (m["close_new"] > 0)]
+    if m.empty:
+        return cached_df
+    ratio = float((m["close_new"] / m["close_old"]).median())
+    if 900 <= ratio <= 1100:
+        print(f"[CẢNH BÁO] Cache lưu giá theo nghìn VND (tỷ lệ API/cache ≈ {ratio:.0f}). Đã nhân cache x1000 để đồng nhất đơn vị.")
+        cached_df = cached_df.copy()
+        for c in ("open", "high", "low", "close"):
+            if c in cached_df.columns:
+                cached_df[c] = cached_df[c] * 1000.0
+    return cached_df
 
 
 def get_historical_data(client: YuantaClient, symbols, start_date: str, end_date: str, max_workers: int = 5):
@@ -98,14 +148,21 @@ def get_historical_data(client: YuantaClient, symbols, start_date: str, end_date
             if completed % 10 == 0 or completed == total:
                 print(f"Đã tải {completed}/{total} mã cổ phiếu...")
 
+    print(
+        f"Tổng kết tải giá: {len(all_data)}/{total} mã có dữ liệu | "
+        f"request lỗi={client.failed_requests} | JSON rỗng={client.empty_payloads}"
+    )
     if not all_data:
-        print("Không tải được dữ liệu mới từ Yuanta API.")
-        return cached_df if cached_df is not None else pd.DataFrame()
+        # fetch_start luôn lùi 14 ngày so với cache => nếu API hoạt động thì CHẮC CHẮN có dữ liệu mới.
+        # Không có nghĩa là API hỏng -> dừng hẳn, tránh xuất bản biểu đồ cũ như thể là mới.
+        print("LỖI NGHIÊM TRỌNG: Không tải được dữ liệu mới từ Yuanta API (xem các dòng [YuantaClient] phía trên).")
+        sys.exit(1)
 
     new_df = pd.concat(all_data, ignore_index=True)
     new_df["time"] = pd.to_datetime(new_df["time"]).dt.date
 
     if cached_df is not None:
+        cached_df = _align_price_units(cached_df, new_df)
         full_df = pd.concat([cached_df, new_df], ignore_index=True)
     else:
         full_df = new_df
@@ -166,59 +223,100 @@ def process_data(full_df: pd.DataFrame) -> pd.DataFrame:
     return daily_stats
 
 
+INDEX_HOVER = (
+    "<b>{label}</b> %{{y:,.2f}}<br>O %{{customdata[0]:,.2f}} · H %{{customdata[1]:,.2f}} · L %{{customdata[2]:,.2f}}"
+    "<br>Vol %{{customdata[3]:,.0f}}<extra></extra>"
+)
+
+
+def _breadth_signals(stats: pd.DataFrame, index_by_time: pd.Series, foreign_by_time: pd.Series, has_foreign: bool):
+    """Điểm Mua/Bán: MA20 cắt MA50 (breadth) + bộ lọc dòng tiền ngoại toàn thị trường (nếu có). Đặt tại điểm số của chỉ số."""
+    df = stats[["time", "breadth_buy_cross", "breadth_sell_cross"]].copy()
+    df["idx"] = df["time"].map(index_by_time)
+    df["fn"] = df["time"].map(foreign_by_time).fillna(0.0)
+    df = df.dropna(subset=["idx"])
+    buy = df[df["breadth_buy_cross"] & ((not has_foreign) | (df["fn"] >= 0))]
+    sell = df[df["breadth_sell_cross"] & ((not has_foreign) | (df["fn"] <= 0))]
+    pack = lambda d: {"x": [t.strftime("%Y-%m-%d") for t in d["time"]], "y": [round(float(v), 2) for v in d["idx"]]}
+    return pack(buy), pack(sell)
+
+
 def export_all_groups_json(
     client: YuantaClient,
     full_df: pd.DataFrame,
-    vnindex_df: pd.DataFrame,
+    store: IndexStore,
     foreign_df: pd.DataFrame | None,
     plot_start_date: str = "2021-06-25",
     output_json: str = "output/breadth_groups.json",
 ):
     """
-    Tính toán MA Ratio (MA10, MA20, MA50, MA200) cho tất cả các nhóm chỉ số & nhóm ngành
-    trong INDEX_GROUPS và xuất ra file JSON để build_pages.py nhúng vào GitHub Pages.
+    Tính MA Ratio (MA10/20/50/200) + điểm số CHÍNH CỦA TỪNG CHỈ SỐ (VNINDEX, VN30, VNREAL...) cho mọi nhóm
+    trong INDEX_GROUPS và xuất JSON để build_pages.py nhúng vào GitHub Pages.
     """
-    print("Bước 5b: Tính toán MA Ratio cho tất cả các nhóm chỉ số & nhóm ngành...")
+    print("Bước 5b: Tính toán MA Ratio + điểm số chỉ số cho tất cả các nhóm...")
     plot_start = pd.to_datetime(plot_start_date).date()
-    base_df = vnindex_df[vnindex_df["time"] >= plot_start].sort_values("time").reset_index(drop=True)
-    if base_df.empty:
+    hose_stats = process_data(full_df)
+    base_dates = sorted(t for t in hose_stats["time"].unique() if t >= plot_start)
+    if not base_dates:
         return
+    base = pd.DataFrame({"time": base_dates})
 
     if foreign_df is not None and not foreign_df.empty:
-        base_df = pd.merge(base_df, foreign_df[["time", "foreign_net_val"]], on="time", how="left")
-        base_df["foreign_net_val"] = base_df["foreign_net_val"].fillna(0.0)
+        fmap = foreign_df.drop_duplicates("time").set_index("time")["foreign_net_val"]
     else:
-        base_df["foreign_net_val"] = 0.0
+        fmap = pd.Series(dtype=float)
+    foreign_vals = base["time"].map(fmap).fillna(0.0)
+    has_foreign = bool((foreign_vals != 0).any())
 
+    def _points(code: str):
+        ser = store.series(code)
+        m = base.merge(ser, on="time", how="left")
+        return m["close"], ser
+
+    def _ohlcv(code: str):
+        """open/high/low/volume căn theo trục ngày của biểu đồ (None nếu ngày đó chưa có OHLCV)."""
+        m = base.merge(store.ohlcv_series(code), on="time", how="left")
+        r = lambda col, nd: [round(float(v), nd) if pd.notna(v) else None for v in m[col]]
+        return {"o": r("open", 2), "h": r("high", 2), "l": r("low", 2), "v": [int(v) if pd.notna(v) else None for v in m["volume"]]}
+
+    hose_idx, _ = _points(group_index_code("HOSE"))
     payload = {
-        "dates": [d.strftime("%Y-%m-%d") for d in base_df["time"]],
-        "vnindex": [round(float(v), 2) if pd.notna(v) else None for v in base_df["VNINDEX"]],
-        "foreign_net_val": [round(float(v), 2) for v in base_df["foreign_net_val"]],
+        "dates": [d.strftime("%Y-%m-%d") for d in base["time"]],
+        "vnindex": [round(float(v), 2) if pd.notna(v) else None for v in hose_idx],
+        "foreign_net_val": [round(float(v), 2) for v in foreign_vals],
+        "generated_at": datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).strftime("%Y-%m-%d %H:%M:%S"),
         "groups": {},
     }
 
     for grp in INDEX_GROUPS:
-        if grp == "HOSE":
-            syms = sorted(full_df["symbol"].unique().tolist())
-        else:
-            syms = client.get_index_symbols(grp)
+        syms = sorted(full_df["symbol"].unique().tolist()) if grp == "HOSE" else client.get_index_symbols(grp)
         if not syms:
             continue
-
         sub_df = full_df[full_df["symbol"].isin(syms)]
         if sub_df.empty:
             continue
 
         stats = process_data(sub_df)
-        merged = pd.merge(base_df[["time"]], stats, on="time", how="left")
+        merged = pd.merge(base[["time"]], stats, on="time", how="left")
+        code = group_index_code(grp)
+        pts, ser = _points(code)
+        buy, sell = _breadth_signals(
+            stats, ser.set_index("time")["close"] if not ser.empty else pd.Series(dtype=float),
+            fmap, has_foreign,
+        )
+        r2 = lambda col: [round(float(v), 2) if pd.notna(v) else None for v in merged[col]]
         payload["groups"][grp] = {
             "count": len(syms),
-            "pct_MA10": [round(float(v), 2) if pd.notna(v) else None for v in merged["pct_MA10"]],
-            "pct_MA20": [round(float(v), 2) if pd.notna(v) else None for v in merged["pct_MA20"]],
-            "pct_MA50": [round(float(v), 2) if pd.notna(v) else None for v in merged["pct_MA50"]],
-            "pct_MA200": [round(float(v), 2) if pd.notna(v) else None for v in merged["pct_MA200"]],
+            "index_code": code,
+            "index_points": [round(float(v), 2) if pd.notna(v) else None for v in pts],
+            "index_snapshot": store.snapshot_for(code),
+            "index_ohlcv": _ohlcv(code),
+            "pct_MA10": r2("pct_MA10"), "pct_MA20": r2("pct_MA20"),
+            "pct_MA50": r2("pct_MA50"), "pct_MA200": r2("pct_MA200"),
+            "buy": buy, "sell": sell,
         }
-        print(f"  + {grp}: {len(syms)} mã")
+        n_pts = int(pd.Series(pts).notna().sum())
+        print(f"  + {grp}: {len(syms)} mã | chỉ số {code}: {n_pts} điểm lịch sử")
 
     os.makedirs(os.path.dirname(output_json) or ".", exist_ok=True)
     with open(output_json, "w", encoding="utf-8") as f:
@@ -226,13 +324,14 @@ def export_all_groups_json(
     print(f"Đã xuất dữ liệu các nhóm ngành ra {output_json}")
 
 
-def get_vnindex(client: YuantaClient, start_date: str, end_date: str) -> pd.DataFrame:
-    """Lấy dữ liệu chỉ số VNINDEX từ Yuanta API."""
-    print("Lấy dữ liệu chỉ số VNINDEX từ Yuanta API...")
-    df = client.get_price_history("VNINDEX", start_date, end_date)
-    if df.empty:
-        return pd.DataFrame()
-    return df[["time", "close"]].rename(columns={"close": "VNINDEX"})
+def get_vnindex(store: IndexStore) -> pd.DataFrame:
+    """VN-Index từ kho (OHLCV TradingView + snapshot) -> [time, VNINDEX, idx_open, idx_high, idx_low, idx_volume]."""
+    ser = store.ohlcv_series(group_index_code("HOSE"))
+    if ser.empty:
+        print("[CẢNH BÁO] Chưa có điểm VN-Index nào (TradingView/index_transaction đều lỗi và kho rỗng).")
+        return pd.DataFrame(columns=["time", "VNINDEX"])
+    print(f"VN-Index: {len(ser)} phiên trong kho, từ {ser['time'].min()} đến {ser['time'].max()}, điểm gần nhất {ser['close'].iloc[-1]}.")
+    return ser.rename(columns={"close": "VNINDEX", "open": "idx_open", "high": "idx_high", "low": "idx_low", "volume": "idx_volume"})
 
 
 def get_vnindex_foreign(client: YuantaClient, start_date: str, end_date: str) -> pd.DataFrame:
@@ -259,7 +358,10 @@ def plot_market_breadth(
     title = f"📊 Market Breadth: VN-Index, {ma_label} & Foreign Flow"
     print(f"Vẽ biểu đồ và lưu ra file HTML/PDF: {output_file}...")
 
-    df = pd.merge(vnindex_df, daily_stats, on="time", how="inner")
+    # Nền là trục ngày của breadth; điểm VN-Index thiếu -> để trống (KHÔNG loại bỏ ngày breadth)
+    df = pd.merge(daily_stats, vnindex_df, on="time", how="left")
+    if "VNINDEX" not in df.columns:
+        df["VNINDEX"] = float("nan")
     if foreign_df is not None and not foreign_df.empty:
         df = pd.merge(df, foreign_df, on="time", how="left")
     else:
@@ -289,6 +391,9 @@ def plot_market_breadth(
             x=df["time"],
             y=df["VNINDEX"],
             name="VN-Index (Pts, left axis)",
+            customdata=df[["idx_open", "idx_high", "idx_low", "idx_volume"]].to_numpy() if all(c in df.columns for c in ("idx_open", "idx_high", "idx_low", "idx_volume")) else None,
+            hovertemplate=INDEX_HOVER.format(label="VN-Index"),
+            mode="lines" if df["VNINDEX"].notna().sum() > 30 else "lines+markers",
             line=dict(color="purple", width=2),
         ),
         row=1 if has_foreign else None,
@@ -297,10 +402,11 @@ def plot_market_breadth(
     )
 
     # Tín hiệu Mua/Bán kết hợp Breadth + Foreign Flow
-    buy_signals = df[df["breadth_buy_cross"] & ((~has_foreign) | (df["foreign_net_val"] >= 0))]
-    sell_signals = df[df["breadth_sell_cross"] & ((~has_foreign) | (df["foreign_net_val"] <= 0))]
+    has_idx = df["VNINDEX"].notna()
+    buy_signals = df[has_idx & df["breadth_buy_cross"] & ((~has_foreign) | (df["foreign_net_val"] >= 0))]
+    sell_signals = df[has_idx & df["breadth_sell_cross"] & ((~has_foreign) | (df["foreign_net_val"] <= 0))]
 
-    if not buy_signals.empty:
+    if True:  # luôn thêm trace (kể cả rỗng) để trang web cập nhật khi đổi nhóm
         fig.add_trace(
             plotly_go.Scatter(
                 x=buy_signals["time"],
@@ -314,7 +420,7 @@ def plot_market_breadth(
             secondary_y=False,
         )
 
-    if not sell_signals.empty:
+    if True:
         fig.add_trace(
             plotly_go.Scatter(
                 x=sell_signals["time"],
@@ -381,7 +487,7 @@ def plot_market_breadth(
     )
 
     fig.update_yaxes(
-        title_text="VN-Index (Index Points)",
+        title_text="VN-Index (Points)",
         row=1 if has_foreign else None,
         col=1 if has_foreign else None,
         secondary_y=False,
@@ -516,49 +622,50 @@ if __name__ == "__main__":
                 # Lọc dữ liệu đúng theo nhóm chỉ số/ngành đang chọn (nếu dùng cache chung)
                 df_group = df[df["symbol"].isin(symbols)].copy()
                 stats = process_data(df_group if not df_group.empty else df)
-                vnindex = get_vnindex(client, fetch_start_date, end_date)
+                print("Bước 4b: Lấy điểm số các chỉ số từ Yuanta index_transaction...")
+                store = IndexStore()
+                index_codes = [group_index_code(g) for g in INDEX_GROUPS]
+                store.update_from_history(client, index_codes)   # nguồn chính: lịch sử ngày của mọi chỉ số
+                store.update_from_api(client, index_codes)       # bổ sung: tăng/giảm phiên hiện tại + đối chiếu
+                vnindex = get_vnindex(store)
                 foreign_df = get_vnindex_foreign(client, fetch_start_date, end_date)
 
-                if not vnindex.empty:
-                    print("Bước 5: Vẽ biểu đồ và lưu ra file HTML/PDF...")
-                    plot_market_breadth(
-                        stats,
-                        vnindex,
-                        ["pct_MA10", "pct_MA20", "pct_MA50", "pct_MA200"],
-                        "MA lines (MA10, MA20, MA50, MA200)",
-                        "output/market_breadth_chart.html",
-                        plot_start_date=plot_start_date,
-                        foreign_df=foreign_df,
-                    )
-                    plot_market_breadth(
-                        stats,
-                        vnindex,
-                        ["pct_MA10", "pct_MA20"],
-                        "MA10 và MA20",
-                        "output/market_breadth_chart_ma10_ma20.html",
-                        plot_start_date=plot_start_date,
-                        foreign_df=foreign_df,
-                    )
-                    plot_market_breadth(
-                        stats,
-                        vnindex,
-                        ["pct_MA50", "pct_MA200"],
-                        "MA50 và MA200",
-                        "output/market_breadth_chart_ma50_ma200.html",
-                        plot_start_date=plot_start_date,
-                        foreign_df=foreign_df,
-                    )
-                    export_all_groups_json(
-                        client,
-                        df,
-                        vnindex,
-                        foreign_df,
-                        plot_start_date=plot_start_date,
-                    )
-                    print("Hoàn thành bước build!")
-                else:
-                    print("LỖI NGHIÊM TRỌNG: Không có dữ liệu VNINDEX từ Yuanta API để vẽ biểu đồ.")
-                    sys.exit(1)
+                print("Bước 5: Vẽ biểu đồ và lưu ra file HTML/PDF...")
+                plot_market_breadth(
+                    stats,
+                    vnindex,
+                    ["pct_MA10", "pct_MA20", "pct_MA50", "pct_MA200"],
+                    "MA lines (MA10, MA20, MA50, MA200)",
+                    "output/market_breadth_chart.html",
+                    plot_start_date=plot_start_date,
+                    foreign_df=foreign_df,
+                )
+                plot_market_breadth(
+                    stats,
+                    vnindex,
+                    ["pct_MA10", "pct_MA20"],
+                    "MA10 và MA20",
+                    "output/market_breadth_chart_ma10_ma20.html",
+                    plot_start_date=plot_start_date,
+                    foreign_df=foreign_df,
+                )
+                plot_market_breadth(
+                    stats,
+                    vnindex,
+                    ["pct_MA50", "pct_MA200"],
+                    "MA50 và MA200",
+                    "output/market_breadth_chart_ma50_ma200.html",
+                    plot_start_date=plot_start_date,
+                    foreign_df=foreign_df,
+                )
+                export_all_groups_json(
+                    client,
+                    df,
+                    store,
+                    foreign_df,
+                    plot_start_date=plot_start_date,
+                )
+                print("Hoàn thành bước build!")
             else:
                 print("LỖI NGHIÊM TRỌNG: Dữ liệu cổ phiếu trống.")
                 sys.exit(1)
