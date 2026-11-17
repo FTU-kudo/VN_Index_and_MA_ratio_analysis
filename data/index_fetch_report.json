@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-17 15:37:54 +0700",
+  "generated_at": "2026-11-17 16:47:24 +0700",
   "runner": {
     "country": "US",
-    "region": "Virginia",
+    "region": "Washington",
     "org": "AS8075 Microsoft Corporation"
   },
   "probes": [
@@ -12,31 +12,42 @@
       "params": {
         "exchange": "HSX"
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 280
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 276,
-      "elapsed_s": 2.23,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?exchange=HSX&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPJArAJqkT4ks55GMN8XAScQM%3D\";</script></body></html> ",
-      "json_s": "NOT_JSON"
+      "bytes": 215347,
+      "elapsed_s": 2.71,
+      "body_head": "{\"success\":true,\"response\":[{\"StockCode\":\"AAA\",\"Exchange\":\"HSX\",\"SymbolType\":\"ST\",\"RefP\":6820,\"CeilingP\":7290,\"FloorP\":6350,\"HighestP\":6870,\"LowestP\":6800,\"OpenP\":6870,\"AvgP\":6835.01,\"LastMP\":6830,\"LastMVol\":500,\"DeemP\":6830,\"DeemVol\":13200,\"TotalVol\":346300,\"TotalVal\":2366964000,\"FTBuyVol\":0,\"FTSel",
+      "json_s": null,
+      "n_records": 410,
+      "n_bars": 0
     },
     {
       "name": "control_index_transaction",
       "url": "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/VNINDEX",
       "params": null,
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 277
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 275,
-      "elapsed_s": 1.16,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/VNINDEX?jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPWL2YLfLsEXMrb5OmDuc%2BEQM%3D\";</script></body></html> ",
-      "json_s": "NOT_JSON"
+      "bytes": 19972,
+      "elapsed_s": 1.33,
+      "body_head": "{\"success\":true,\"response\":{\"IndexCode\":\"VNINDEX\",\"IndexName\":\"VN-INDEX\",\"RefIndex\":1736.89,\"CurrIndex\":1726.72,\"Ceiling\":3,\"Up\":110,\"NoChange\":62,\"Down\":207,\"Floor\":8,\"TotalVolTrade\":636279717,\"TotalValTrade\":14961453458884.0,\"TotalRecords\":347,\"CurrTradingSessionID\":\"99\",\"ListTransaction\":[{\"Index",
+      "json_s": null,
+      "n_bars": 0
     },
     {
       "name": "tv_ysradar_address_bar_short",
@@ -48,16 +59,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 305
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 305,
-      "elapsed_s": 1.13,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1794000000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOP3yNlgeDILQFnsvWY4KptRwM%3D\";</script></body></h",
-      "json_s": "NOT_JSON",
+      "bytes": 489,
+      "elapsed_s": 0.79,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
+      "json_s": "ok",
+      "n_bars": 6,
       "host": "ysradar",
       "profile": "address_bar",
       "range": "short"
@@ -72,16 +88,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 305
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 307,
-      "elapsed_s": 1.26,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1262304000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPbKymCTa5SK2gEMIp%2F6lSawM%3D\";</script></body><",
-      "json_s": "NOT_JSON",
+      "bytes": 318980,
+      "elapsed_s": 1.62,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
+      "json_s": "ok",
+      "n_bars": 4206,
       "host": "ysradar",
       "profile": "address_bar",
       "range": "browser_url"
@@ -96,16 +117,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 307
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 309,
-      "elapsed_s": 1.14,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1794000000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPHOKN%2Fo%2FenKCNdwUtOoaoAgM%3D\";</script></body",
-      "json_s": "NOT_JSON",
+      "bytes": 489,
+      "elapsed_s": 1.06,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
+      "json_s": "ok",
+      "n_bars": 6,
       "host": "ysradar",
       "profile": "browser_basic",
       "range": "short"
@@ -120,16 +146,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 309
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 305,
-      "elapsed_s": 0.78,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1262304000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOP2dsxOb4hm1XRNaHDTuIY1AM%3D\";</script></body></h",
-      "json_s": "NOT_JSON",
+      "bytes": 318980,
+      "elapsed_s": 1.28,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
+      "json_s": "ok",
+      "n_bars": 4206,
       "host": "ysradar",
       "profile": "browser_basic",
       "range": "browser_url"
@@ -144,16 +175,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 307
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 305,
-      "elapsed_s": 0.96,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1794000000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPBuCCJ90KSzYV7eG7GlLtyAQ%3D\";</script></body></h",
-      "json_s": "NOT_JSON",
+      "bytes": 489,
+      "elapsed_s": 0.86,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
+      "json_s": "ok",
+      "n_bars": 6,
       "host": "ysradar",
       "profile": "referer_only",
       "range": "short"
@@ -168,16 +204,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 307
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 305,
-      "elapsed_s": 1.17,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1262304000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPCdtZQNAA8mFqke3LrMUm1AM%3D\";</script></body></h",
-      "json_s": "NOT_JSON",
+      "bytes": 318980,
+      "elapsed_s": 1.46,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
+      "json_s": "ok",
+      "n_bars": 4206,
       "host": "ysradar",
       "profile": "referer_only",
       "range": "browser_url"
@@ -192,16 +233,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 305
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 309,
-      "elapsed_s": 1.37,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1794000000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPjEy%2FgsrOTmwSomDk%2FXgYjQM%3D\";</script></body",
-      "json_s": "NOT_JSON",
+      "bytes": 489,
+      "elapsed_s": 1.01,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
+      "json_s": "ok",
+      "n_bars": 6,
       "host": "ysradar",
       "profile": "origin_only",
       "range": "short"
@@ -216,16 +262,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 309
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 307,
-      "elapsed_s": 1.11,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1262304000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPuPQG%2Fosz04Lmmy5tLWPutgM%3D\";</script></body><",
-      "json_s": "NOT_JSON",
+      "bytes": 318980,
+      "elapsed_s": 1.46,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
+      "json_s": "ok",
+      "n_bars": 4206,
       "host": "ysradar",
       "profile": "origin_only",
       "range": "browser_url"
@@ -240,16 +291,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 307
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 305,
-      "elapsed_s": 1.26,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1794000000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPZ9waNsKGCGzyWYd3xspvCQM%3D\";</script></body></h",
-      "json_s": "NOT_JSON",
+      "bytes": 489,
+      "elapsed_s": 0.99,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
+      "json_s": "ok",
+      "n_bars": 6,
       "host": "ysradar",
       "profile": "browser_full",
       "range": "short"
@@ -264,16 +320,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 305
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 305,
-      "elapsed_s": 1.16,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1262304000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPn8BKH1BfbjHQLjvjQo7XNwM%3D\";</script></body></h",
-      "json_s": "NOT_JSON",
+      "bytes": 318980,
+      "elapsed_s": 1.49,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
+      "json_s": "ok",
+      "n_bars": 4206,
       "host": "ysradar",
       "profile": "browser_full",
       "range": "browser_url"
@@ -288,16 +349,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 305
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 309,
-      "elapsed_s": 0.93,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1794000000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOP%2BOhxlfILluUElIg8nu%2BGnQM%3D\";</script></body",
-      "json_s": "NOT_JSON",
+      "bytes": 489,
+      "elapsed_s": 0.79,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
+      "json_s": "ok",
+      "n_bars": 6,
       "host": "ysradar",
       "profile": "plain_requests",
       "range": "short"
@@ -312,16 +378,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 307
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 309,
-      "elapsed_s": 1.13,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1262304000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPzSxmSkGXS%2BoqQX%2Bd7b2luQM%3D\";</script></body",
-      "json_s": "NOT_JSON",
+      "bytes": 318980,
+      "elapsed_s": 1.54,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
+      "json_s": "ok",
+      "n_bars": 4206,
       "host": "ysradar",
       "profile": "plain_requests",
       "range": "browser_url"
@@ -336,16 +407,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 307
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 309,
-      "elapsed_s": 0.87,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1794000000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPxxTqziu%2BHAf%2FteKlaiqZ5wQ%3D\";</script></body",
-      "json_s": "NOT_JSON",
+      "bytes": 489,
+      "elapsed_s": 1.09,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
+      "json_s": "ok",
+      "n_bars": 6,
       "host": "ysradar",
       "profile": "curl_like",
       "range": "short"
@@ -360,16 +436,21 @@
         "to": 1794873600,
         "limit": 100000
       },
+      "challenge_followed": {
+        "status": 200,
+        "bytes": 305
+      },
       "status": 200,
-      "content_type": "text/html",
+      "content_type": "application/json; charset=utf-8",
       "server": "nginx",
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 307,
-      "elapsed_s": 0.75,
-      "body_head": "<html><head><title>Attention Required</title></head><body><script>window.location.href=\"https://ysradar.yuanta.com.vn/v2/tradingview/history?symbol=VNINDEX&resolution=1D&from=1262304000&to=1794873600&limit=100000&jskey=B0C9rGJdyLmkSISF5PDt3AZVjC%2F99ZOPb6w%2BkBtbJjictFIdTirBYQM%3D\";</script></body><",
-      "json_s": "NOT_JSON",
+      "bytes": 318980,
+      "elapsed_s": 1.47,
+      "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
+      "json_s": "ok",
+      "n_bars": 4206,
       "host": "ysradar",
       "profile": "curl_like",
       "range": "browser_url"
@@ -381,8 +462,8 @@
         "from_date": "2026-11-01",
         "to_date": "2026-11-17"
       },
-      "error": "ConnectTimeout: HTTPSConnectionPool(host='ysradarapi.yuanta.com.vn', port=443): Max retries exceeded with url: /api/v3/market_data/market_watch/price_history/VNINDEX?from_date=2026-11-01&to_date=2026-11-17 (Caused by ConnectTimeoutError(<HTTPSConnection(host='ysradarapi.yuanta.com.vn', port=443) at 0x793650ba0f70>, 'Connection to ysradarapi.yuanta.com.vn timed out. (connect timeout=8)'))",
-      "elapsed_s": 16.48
+      "error": "ConnectTimeout: HTTPSConnectionPool(host='ysradarapi.yuanta.com.vn', port=443): Max retries exceeded with url: /api/v3/market_data/market_watch/price_history/VNINDEX?from_date=2026-11-01&to_date=2026-11-17 (Caused by ConnectTimeoutError(<HTTPSConnection(host='ysradarapi.yuanta.com.vn', port=443) at 0x7351013d3670>, 'Connection to ysradarapi.yuanta.com.vn timed out. (connect timeout=8)'))",
+      "elapsed_s": 16.35
     },
     {
       "name": "disc_price_history_VN30",
@@ -391,11 +472,15 @@
         "from_date": "2026-11-01",
         "to_date": "2026-11-17"
       },
-      "error": "ConnectTimeout: HTTPSConnectionPool(host='ysradarapi.yuanta.com.vn', port=443): Max retries exceeded with url: /api/v3/market_data/market_watch/price_history/VN30?from_date=2026-11-01&to_date=2026-11-17 (Caused by ConnectTimeoutError(<HTTPSConnection(host='ysradarapi.yuanta.com.vn', port=443) at 0x793650ba1750>, 'Connection to ysradarapi.yuanta.com.vn timed out. (connect timeout=8)'))",
-      "elapsed_s": 16.48
+      "error": "ConnectTimeout: HTTPSConnectionPool(host='ysradarapi.yuanta.com.vn', port=443): Max retries exceeded with url: /api/v3/market_data/market_watch/price_history/VN30?from_date=2026-11-01&to_date=2026-11-17 (Caused by ConnectTimeoutError(<HTTPSConnection(host='ysradarapi.yuanta.com.vn', port=443) at 0x7351013d1e40>, 'Connection to ysradarapi.yuanta.com.vn timed out. (connect timeout=8)'))",
+      "elapsed_s": 16.2
     }
   ],
-  "winner": null,
+  "winner": {
+    "host": "ysradar",
+    "url": "https://ysradar.yuanta.com.vn/v2/tradingview/history",
+    "profile": "address_bar"
+  },
   "codes": [
     "VN100",
     "VN30",
@@ -420,5 +505,145 @@
     "VNX50",
     "VNXALL"
   ],
-  "status": "no_working_request"
+  "per_code": {
+    "VN100": {
+      "fetched": 4206,
+      "from": "2010-01-01",
+      "first": "2010-01-04",
+      "last": "2026-11-17"
+    },
+    "VN30": {
+      "fetched": 4206,
+      "from": "2010-01-01",
+      "first": "2010-01-04",
+      "last": "2026-11-17"
+    },
+    "VNALL": {
+      "fetched": 4206,
+      "from": "2010-01-01",
+      "first": "2010-01-04",
+      "last": "2026-11-17"
+    },
+    "VNCOND": {
+      "fetched": 2697,
+      "from": "2010-01-01",
+      "first": "2016-01-25",
+      "last": "2026-11-17"
+    },
+    "VNCONS": {
+      "fetched": 2697,
+      "from": "2010-01-01",
+      "first": "2016-01-25",
+      "last": "2026-11-17"
+    },
+    "VNDIAMOND": {
+      "fetched": 1742,
+      "from": "2010-01-01",
+      "first": "2019-11-21",
+      "last": "2026-11-17"
+    },
+    "VNENE": {
+      "fetched": 2697,
+      "from": "2010-01-01",
+      "first": "2016-01-25",
+      "last": "2026-11-17"
+    },
+    "VNFIN": {
+      "fetched": 2697,
+      "from": "2010-01-01",
+      "first": "2016-01-25",
+      "last": "2026-11-17"
+    },
+    "VNFINLEAD": {
+      "fetched": 1742,
+      "from": "2010-01-01",
+      "first": "2019-11-21",
+      "last": "2026-11-17"
+    },
+    "VNFINSELECT": {
+      "fetched": 1742,
+      "from": "2010-01-01",
+      "first": "2019-11-21",
+      "last": "2026-11-17"
+    },
+    "VNHEAL": {
+      "fetched": 2697,
+      "from": "2010-01-01",
+      "first": "2016-01-25",
+      "last": "2026-11-17"
+    },
+    "VNIND": {
+      "fetched": 2697,
+      "from": "2010-01-01",
+      "first": "2016-01-25",
+      "last": "2026-11-17"
+    },
+    "VNINDEX": {
+      "fetched": 4207,
+      "from": "2010-01-01",
+      "first": "2010-01-04",
+      "last": "2026-11-17"
+    },
+    "VNIT": {
+      "fetched": 2563,
+      "from": "2010-01-01",
+      "first": "2016-08-10",
+      "last": "2026-11-17"
+    },
+    "VNMAT": {
+      "fetched": 2697,
+      "from": "2010-01-01",
+      "first": "2016-01-25",
+      "last": "2026-11-17"
+    },
+    "VNMID": {
+      "fetched": 4206,
+      "from": "2010-01-01",
+      "first": "2010-01-04",
+      "last": "2026-11-17"
+    },
+    "VNREAL": {
+      "fetched": 2697,
+      "from": "2010-01-01",
+      "first": "2016-01-25",
+      "last": "2026-11-17"
+    },
+    "VNSI": {
+      "fetched": 2325,
+      "from": "2010-01-01",
+      "first": "2017-07-24",
+      "last": "2026-11-17"
+    },
+    "VNSML": {
+      "fetched": 4206,
+      "from": "2010-01-01",
+      "first": "2010-01-04",
+      "last": "2026-11-17"
+    },
+    "VNUTI": {
+      "fetched": 2697,
+      "from": "2010-01-01",
+      "first": "2016-01-25",
+      "last": "2026-11-17"
+    },
+    "VNX50": {
+      "fetched": 2325,
+      "from": "2010-01-01",
+      "first": "2017-07-24",
+      "last": "2026-11-17"
+    },
+    "VNXALL": {
+      "fetched": 2511,
+      "from": "2010-01-01",
+      "first": "2016-10-24",
+      "last": "2026-11-17"
+    }
+  },
+  "summary": {
+    "ok": 22,
+    "total": 22,
+    "rows_total": 64460,
+    "failed": []
+  },
+  "status": "ok"
 }
