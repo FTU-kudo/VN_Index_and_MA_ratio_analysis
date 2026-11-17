@@ -45,14 +45,28 @@ jobs:
         id: fetch
         continue-on-error: true      # vẫn commit báo cáo chẩn đoán khi thất bại
         run: |
+          # Tìm script ở scripts/ (chuẩn) hoặc thư mục gốc (nếu lỡ đặt ở gốc repo)
+          SCRIPT=""
+          for p in scripts/fetch_index_ohlcv.py fetch_index_ohlcv.py; do
+            if [ -f "$p" ]; then SCRIPT="$p"; break; fi
+          done
+          if [ -z "$SCRIPT" ]; then
+            echo "::error::Không tìm thấy fetch_index_ohlcv.py (đã thử scripts/ và thư mục gốc). Các file trong repo:"
+            ls -la . scripts 2>/dev/null || true
+            exit 3
+          fi
+          echo "Dùng script: $SCRIPT"
           if [ "${{ github.event.inputs.full }}" = "true" ]; then FULL="--full"; else FULL=""; fi
-          python scripts/fetch_index_ohlcv.py $FULL
+          python "$SCRIPT" $FULL
 
       - name: Commit data + báo cáo
+        if: always()
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f data/index_ohlcv.csv data/index_fetch_report.json 2>/dev/null || true
+          for f in data/index_ohlcv.csv data/index_fetch_report.json; do
+            if [ -f "$f" ]; then git add -f "$f"; fi
+          done
           git commit -m "Update index OHLCV + fetch report [skip ci]" || echo "No changes to commit"
           git pull --rebase --autostash origin main || true
           git push
@@ -60,5 +74,10 @@ jobs:
       - name: Báo lỗi nếu không tải được chỉ số nào
         if: steps.fetch.outcome == 'failure'
         run: |
-          echo "Không tải được OHLCV chỉ số nào. Xem data/index_fetch_report.json (đã commit) để biết nguyên nhân."
+          if [ -f data/index_fetch_report.json ]; then
+            echo "Không tải được OHLCV chỉ số nào. Báo cáo chẩn đoán đã được commit: data/index_fetch_report.json"
+            python -c "import json; d=json.load(open('data/index_fetch_report.json')); print('status =', d.get('status')); print('runner =', d.get('runner'))"
+          else
+            echo "::error::Script KHÔNG tạo được báo cáo (crash hoặc thiếu file) - mở log của bước 'Fetch index OHLCV' để xem lỗi."
+          fi
           exit 1
