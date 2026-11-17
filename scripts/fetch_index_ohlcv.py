@@ -32,19 +32,24 @@ UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like 
 ORIGIN = "https://ysradar.yuanta.com.vn"
 
 # Các kiểu header sẽ thử. None = để requests tự đặt (User-Agent: python-requests/x.y)
+_BASIC = {"User-Agent": UA, "Accept": "application/json, text/plain, */*", "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7"}
 PROFILES = {
-    "browser_basic": {"User-Agent": UA, "Accept": "application/json, text/plain, */*",
-                      "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7"},
-    "browser_full": {"User-Agent": UA, "Accept": "application/json, text/plain, */*",
-                     "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7", "Accept-Encoding": "gzip, deflate",
-                     "Referer": ORIGIN + "/", "Origin": ORIGIN,
+    # y hệt trình duyệt khi bạn dán URL vào thanh địa chỉ (điều hướng tài liệu, Accept: text/html)
+    "address_bar": {"User-Agent": UA,
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                    "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7", "Upgrade-Insecure-Requests": "1",
+                    "Sec-Fetch-Dest": "document", "Sec-Fetch-Mode": "navigate", "Sec-Fetch-Site": "none", "Sec-Fetch-User": "?1",
+                    "Cache-Control": "max-age=0"},
+    "browser_basic": dict(_BASIC),
+    "referer_only": {**_BASIC, "Referer": ORIGIN + "/"},
+    "origin_only": {**_BASIC, "Origin": ORIGIN},
+    "browser_full": {**_BASIC, "Accept-Encoding": "gzip, deflate", "Referer": ORIGIN + "/", "Origin": ORIGIN,
                      "Sec-Fetch-Dest": "empty", "Sec-Fetch-Mode": "cors", "Sec-Fetch-Site": "same-origin"},
-    "plain_requests": None,
+    "plain_requests": None,   # None = để requests tự đặt (User-Agent: python-requests/x.y)
     "curl_like": {"User-Agent": "curl/8.5.0", "Accept": "*/*"},
 }
 HISTORY_URLS = {
     "ysradar": "https://ysradar.yuanta.com.vn/v2/tradingview/history",
-    "ysradarapi": "https://ysradarapi.yuanta.com.vn/v2/tradingview/history",   # phỏng đoán, chỉ để thử
 }
 # URL y hệt cái bạn đã mở được trong trình duyệt (from/to cố định)
 BROWSER_PARAMS = {"symbol": "VNINDEX", "resolution": "1D", "from": 1262304000, "to": 1794873600, "limit": 100000}
@@ -67,6 +72,8 @@ def probe(name: str, url: str, params=None, headers=None, timeout=(8, 30)) -> di
             j = r.json()
             if isinstance(j, dict):
                 info["json_s"] = j.get("s")
+                if isinstance(j.get("response"), list):
+                    info["n_records"] = len(j["response"])
                 bars = j.get("bars")
                 info["n_bars"] = len(bars) if isinstance(bars, list) else (len(j["t"]) if isinstance(j.get("t"), list) else 0)
             else:
@@ -85,20 +92,38 @@ def is_good(p: dict) -> bool:
 def run_probes() -> tuple[list[dict], dict | None]:
     results, winner = [], None
     # Đối chứng: 2 endpoint đã biết là chạy được từ runner
-    results.append(probe("control_list_stock_info", "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info",
-                         {"exchange": "HSX"}, PROFILES["browser_basic"]))
-    results.append(probe("control_index_transaction", "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/VNINDEX",
-                         None, PROFILES["browser_basic"]))
+    for name, url, prm in (
+        ("control_list_stock_info", "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info", {"exchange": "HSX"}),
+        ("control_index_transaction", "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/index/index_transaction/VNINDEX", None),
+    ):
+        c = probe(name, url, prm, PROFILES["browser_basic"])
+        results.append(c)
+        _print_probe(c)
     for host, url in HISTORY_URLS.items():
         for prof_name, headers in PROFILES.items():
             for pname, params in (("short", SHORT_PARAMS), ("browser_url", BROWSER_PARAMS)):
                 p = probe(f"tv_{host}_{prof_name}_{pname}", url, params, headers)
                 p.update({"host": host, "profile": prof_name, "range": pname})
                 results.append(p)
-                print(f"  probe {p['name']}: status={p.get('status')} s={p.get('json_s')} bars={p.get('n_bars')} err={p.get('error')}")
+                _print_probe(p)
                 if winner is None and is_good(p):
                     winner = {"host": host, "url": url, "profile": prof_name}
+    # Khám phá (KHÔNG dùng làm winner): chỉ số có nằm trong endpoint price_history của cổ phiếu không?
+    for code in ("VNINDEX", "VN30"):
+        d = probe(f"disc_price_history_{code}",
+                  f"https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch/price_history/{code}",
+                  {"from_date": "2026-11-01", "to_date": "2026-11-17"}, PROFILES["browser_basic"])
+        results.append(d)
+        _print_probe(d)
     return results, winner
+
+
+def _print_probe(p: dict) -> None:
+    """In đủ thông tin vào log để đọc được ngay cả khi không commit được báo cáo."""
+    print(f"  probe {p['name']}: status={p.get('status')} s={p.get('json_s')} bars={p.get('n_bars')} rec={p.get('n_records')} "
+          f"ct={p.get('content_type')} bytes={p.get('bytes')} err={p.get('error')}")
+    if p.get("body_head") and not (p.get("json_s") == "ok" or p.get("n_records")):
+        print(f"      body: {p['body_head'][:160]!r}")
 
 
 def egress_info() -> dict:
