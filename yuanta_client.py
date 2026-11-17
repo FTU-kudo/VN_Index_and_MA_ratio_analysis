@@ -11,9 +11,12 @@ Thay thế hoàn toàn nguồn vnstock bằng hệ thống API của Yuanta Secu
 from __future__ import annotations
 
 import logging
+import random
+import re
 import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
+from urllib.parse import urljoin
 
 import pandas as pd
 import requests
