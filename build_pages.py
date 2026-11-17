@@ -425,9 +425,12 @@ def main():
     html = re.sub(r"(<body[^>]*>)", lambda m: f"{m.group(1)}\n{TOP_BAR}\n<div id=\"main-content\">", html, count=1)
 
     # 3. Load groups JSON if available
-    groups_json_str = "null"
-    if GROUPS_JSON.exists():
-        groups_json_str = GROUPS_JSON.read_text(encoding="utf-8")
+    if not GROUPS_JSON.exists():
+        # Trước đây ghi "null" -> trang mất toàn bộ nhóm ngành và đường chỉ số. Giờ từ chối ghi đè.
+        print(f"LỖI: thiếu {GROUPS_JSON}. KHÔNG ghi đè {DEST} bằng dữ liệu rỗng. "
+              "Hãy chạy workflow 'VN-Index and MA Ratio Analysis' (nó tạo và commit file này).")
+        sys.exit(1)
+    groups_json_str = GROUPS_JSON.read_text(encoding="utf-8")
 
     published_str = datetime.now(VN).strftime("%d/%m/%Y %H:%M:%S")
     bottom = (
