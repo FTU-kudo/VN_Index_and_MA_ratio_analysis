@@ -75,8 +75,10 @@ class IndexStore:
         full_flag = force_full or os.getenv("INDEX_FULL_REFRESH") == "1"
         ok = 0
         for code in dict.fromkeys(str(c).upper() for c in codes):
-            have = self.df[self.df["code"] == code]
-            start = full_from if (have.empty or full_flag) else (max(have["time"]) - timedelta(days=overlap_days)).strftime("%Y-%m-%d")
+            have = self.df[(self.df["code"] == code) & (self.df["source"] != "yuanta_index_transaction")]
+            # Các dòng snapshot (mỗi ngày 1 dòng) KHÔNG phải lịch sử -> không được làm mất lượt tải đầy đủ từ 2010
+            need_full = full_flag or len(have) < 30
+            start = full_from if need_full else (max(have["time"]) - timedelta(days=overlap_days)).strftime("%Y-%m-%d")
             h = client.get_index_history(code, start)
             if h.empty:
                 print(f"  [IndexHist] {code}: không có dữ liệu lịch sử (từ {start}).")
