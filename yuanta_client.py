@@ -26,6 +26,7 @@ BASE_URL = "https://ysradarapi.yuanta.com.vn/api/v3/market_data/market_watch"
 PRICE_HISTORY_URL = f"{BASE_URL}/price_history/{{symbol}}"
 FOREIGN_HISTORY_URL = f"{BASE_URL}/price_history_foreign/{{symbol}}"
 LIST_STOCK_INFO_URL = "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info"
+LIST_STOCK_INFO_HSX_URL = "https://ysradar.yuanta.com.vn/api/v3/market_data/price_board/stock/list_stock_info?exchange=HSX"
 
 # Danh sách các bộ lọc chỉ số & nhóm ngành trên VN-Index / HOSE
 INDEX_GROUPS = [
@@ -118,27 +119,57 @@ class YuantaClient:
         self.timeout = timeout
         self.rate_limit_delay = rate_limit_delay
 
-    def _get_json(self, url: str, params: Dict[str, Any]) -> Any:
-        try:
-            resp = self.session.get(url, params=params, timeout=self.timeout)
-            resp.raise_for_status()
-            return resp.json()
-        except requests.exceptions.Timeout:
-            print(f"[YuantaClient] TIMEOUT khi gọi {url} params={params}")
-            return None
-        except requests.exceptions.HTTPError as exc:
-            status = exc.response.status_code if exc.response is not None else "?"
-            print(f"[YuantaClient] HTTP {status} khi gọi {url} params={params}: {exc}")
-            return None
-        except requests.exceptions.RequestException as exc:
-            print(f"[YuantaClient] Lỗi kết nối khi gọi {url}: {exc}")
-            return None
-        except ValueError as exc:
-            print(f"[YuantaClient] Lỗi parse JSON từ {url}: {exc}")
-            return None
-        finally:
-            if self.rate_limit_delay > 0:
-                time.sleep(self.rate_limit_delay)
+    def _handle_js_challenge(self, resp: requests.Response, original_url: str) -> bool:
+        """
+        Kiểm tra và vượt qua thử thách JavaScript chuyển hướng (JS Redirect Challenge)
+        nếu phản hồi chứa `window.location.href` và tham số `jskey`, lưu cookie vào Session.
+        """
+        text = resp.text or ""
+        if "window.location.href" in text and "jskey" in text:
+            match = re.search(r'window\.location\.href\s*=\s*["\']([^"\']+jskey=[^"\']+)["\']', text)
+            if match:
+                challenge_url = urljoin(original_url, match.group(1))
+                try:
+                    self.session.get(challenge_url, timeout=self.timeout)
+                    return True
+                except requests.exceptions.RequestException as exc:
+                    print(f"[YuantaClient] Lỗi khi vượt JS challenge {challenge_url}: {exc}")
+        return False
+
+    def _get_json(self, url: str, params: Dict[str, Any], max_retries: int = 3) -> Any:
+        for attempt in range(1, max_retries + 1):
+            try:
+                resp = self.session.get(url, params=params, timeout=self.timeout)
+
+                # Kiểm tra JS Redirect Challenge (jskey)
+                if self._handle_js_challenge(resp, resp.url):
+                    resp = self.session.get(url, params=params, timeout=self.timeout)
+
+                if resp.status_code != 200:
+                    print(f"[YuantaClient] HTTP {resp.status_code} (lần {attempt}/{max_retries}) khi gọi {url}")
+                    if attempt < max_retries:
+                        time.sleep(random.uniform(1.0, 3.0))
+                        continue
+                    return None
+
+                if not resp.text or not resp.text.strip():
+                    print(f"[YuantaClient] Phản hồi rỗng (lần {attempt}/{max_retries}) khi gọi {url}")
+                    if attempt < max_retries:
+                        time.sleep(random.uniform(1.0, 3.0))
+                        continue
+                    return None
+
+                return resp.json()
+            except (requests.exceptions.RequestException, ValueError) as exc:
+                print(f"[YuantaClient] Lỗi (lần {attempt}/{max_retries}) khi gọi {url}: {exc}")
+                if attempt < max_retries:
+                    time.sleep(random.uniform(1.0, 3.0))
+                else:
+                    return None
+            finally:
+                # Trễ ngẫu nhiên 0.2 - 0.5s giữa các request để hạn chế bị khóa IP
+                time.sleep(random.uniform(0.2, 0.5))
+        return None
 
     def get_index_symbols(self, index_code: str) -> List[str]:
         """
