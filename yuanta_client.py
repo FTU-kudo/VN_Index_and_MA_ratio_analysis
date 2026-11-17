@@ -11,9 +11,11 @@ Thay thế hoàn toàn nguồn vnstock bằng hệ thống API của Yuanta Secu
 from __future__ import annotations
 
 import logging
+import re
 import threading
 import time
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlparse
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -117,6 +119,26 @@ def _build_session(retries: int = 3, backoff_factor: float = 0.8) -> requests.Se
     return session
 
 
+# Yuanta đặt lớp chống bot phía trước API: với một số IP (vd. máy chủ GitHub Actions) nó trả HTTP 200 + một trang HTML
+# rất ngắn "Attention Required" chỉ chứa  window.location.href="<cùng URL>&jskey=<token>"  - trình duyệt chạy JS và tự
+# gọi lại URL đó nên bạn thấy JSON, còn requests thì dừng ở trang này (-> "Expecting value: line 1 column 1").
+_CHALLENGE_RE = re.compile(r'window\.location\.href\s*=\s*"(https://[^"]+)"')
+MAX_CHALLENGE_HOPS = 2
+
+
+def challenge_url(text: str) -> Optional[str]:
+    """Trả về URL chuyển hướng (có jskey) nếu `text` là trang chống bot của Yuanta, ngược lại None."""
+    if not text or len(text) > 2000 or "jskey=" not in text:
+        return None
+    m = _CHALLENGE_RE.search(text)
+    if not m:
+        return None
+    href = m.group(1)
+    host = (urlparse(href).hostname or "").lower()
+    # Chỉ đi theo URL thuộc miền của Yuanta (không đi theo chuyển hướng tới nơi khác)
+    return href if host == "yuanta.com.vn" or host.endswith(".yuanta.com.vn") else None
+
+
 def _validate_date(date_str: str) -> str:
     """Đảm bảo định dạng ngày chuẩn YYYY-MM-DD."""
     return datetime.strptime(date_str.strip(), "%Y-%m-%d").strftime("%Y-%m-%d")
@@ -169,6 +191,7 @@ class YuantaClient:
         self.history_url = TRADINGVIEW_HISTORY_URL   # có thể đổi bởi scripts/fetch_index_ohlcv.py nếu probe tìm ra URL/host chạy được
         self.failed_requests = 0   # số request lỗi mạng/HTTP/không phải JSON
         self.empty_payloads = 0    # số request trả JSON hợp lệ nhưng không có bản ghi
+        self.challenges_followed = 0   # số lần phải đi theo trang chống bot
 
     def _count(self, attr: str) -> None:
         with self._lock:
@@ -179,6 +202,15 @@ class YuantaClient:
         try:
             resp = self.session.get(url, params=params, headers=extra_headers, timeout=timeout or self.timeout)
             resp.raise_for_status()
+            for _ in range(MAX_CHALLENGE_HOPS):
+                href = challenge_url(resp.text)
+                if not href:
+                    break
+                self._count("challenges_followed")
+                if self.challenges_followed == 1:
+                    print("[YuantaClient] Gặp trang chống bot (jskey) -> tự chuyển hướng theo JS như trình duyệt.")
+                resp = self.session.get(href, headers=extra_headers, timeout=timeout or self.timeout)
+                resp.raise_for_status()
         except requests.exceptions.Timeout:
             self._count("failed_requests")
             print(f"[YuantaClient] TIMEOUT khi gọi {url} params={params}")
