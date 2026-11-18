@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-18 00:50:48 +0700",
+  "generated_at": "2026-11-19 00:30:14 +0700",
   "runner": {
     "country": "US",
-    "region": "California",
+    "region": "Virginia",
     "org": "AS8075 Microsoft Corporation"
   },
   "probes": [
@@ -14,7 +14,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 278
+        "bytes": 276
       },
       "status": 200,
       "content_type": "application/json",
@@ -22,9 +22,9 @@
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 215347,
-      "elapsed_s": 3.16,
-      "body_head": "{\"success\":true,\"response\":[{\"StockCode\":\"AAA\",\"Exchange\":\"HSX\",\"SymbolType\":\"ST\",\"RefP\":6820,\"CeilingP\":7290,\"FloorP\":6350,\"HighestP\":6870,\"LowestP\":6800,\"OpenP\":6870,\"AvgP\":6835.01,\"LastMP\":6830,\"LastMVol\":500,\"DeemP\":6830,\"DeemVol\":13200,\"TotalVol\":346300,\"TotalVal\":2366964000,\"FTBuyVol\":0,\"FTSel",
+      "bytes": 215739,
+      "elapsed_s": 4.56,
+      "body_head": "{\"success\":true,\"response\":[{\"StockCode\":\"AAA\",\"Exchange\":\"HSX\",\"SymbolType\":\"ST\",\"RefP\":6830,\"CeilingP\":7300,\"FloorP\":6360,\"HighestP\":6840,\"LowestP\":6680,\"OpenP\":6840,\"AvgP\":6743.07,\"LastMP\":6680,\"LastMVol\":1500,\"DeemP\":6680,\"DeemVol\":152800,\"TotalVol\":1185200,\"TotalVal\":7991882000,\"FTBuyVol\":1500,",
       "json_s": null,
       "n_records": 410,
       "n_bars": 0
@@ -35,7 +35,7 @@
       "params": null,
       "challenge_followed": {
         "status": 200,
-        "bytes": 275
+        "bytes": 277
       },
       "status": 200,
       "content_type": "application/json",
@@ -43,9 +43,9 @@
       "cf_ray": null,
       "via": "mly inter",
       "redirects": [],
-      "bytes": 19972,
-      "elapsed_s": 1.51,
-      "body_head": "{\"success\":true,\"response\":{\"IndexCode\":\"VNINDEX\",\"IndexName\":\"VN-INDEX\",\"RefIndex\":1736.89,\"CurrIndex\":1726.72,\"Ceiling\":3,\"Up\":110,\"NoChange\":62,\"Down\":207,\"Floor\":8,\"TotalVolTrade\":636279717,\"TotalValTrade\":14961453458884.0,\"TotalRecords\":347,\"CurrTradingSessionID\":\"99\",\"ListTransaction\":[{\"Index",
+      "bytes": 20075,
+      "elapsed_s": 1.85,
+      "body_head": "{\"success\":true,\"response\":{\"IndexCode\":\"VNINDEX\",\"IndexName\":\"VN-INDEX\",\"RefIndex\":1726.72,\"CurrIndex\":1703.01,\"Ceiling\":3,\"Up\":64,\"NoChange\":49,\"Down\":272,\"Floor\":5,\"TotalVolTrade\":771780554,\"TotalValTrade\":17453836863746.0,\"TotalRecords\":347,\"CurrTradingSessionID\":\"99\",\"ListTransaction\":[{\"Index\"",
       "json_s": null,
       "n_bars": 0
     },
@@ -61,7 +61,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 309
+        "bytes": 305
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -70,7 +70,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 1.48,
+      "elapsed_s": 1.63,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -99,7 +99,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.83,
+      "elapsed_s": 2.31,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -119,7 +119,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 305
+        "bytes": 311
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -128,7 +128,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 1.22,
+      "elapsed_s": 1.67,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -148,7 +148,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 309
+        "bytes": 305
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -157,7 +157,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 2.09,
+      "elapsed_s": 1.87,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -186,7 +186,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 1.06,
+      "elapsed_s": 1.65,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -215,7 +215,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.95,
+      "elapsed_s": 1.89,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -235,7 +235,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 305
+        "bytes": 307
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -244,7 +244,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 1.23,
+      "elapsed_s": 1.83,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -264,7 +264,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 309
+        "bytes": 307
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -273,7 +273,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.76,
+      "elapsed_s": 2.32,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -293,7 +293,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 305
+        "bytes": 309
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -302,7 +302,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 1.39,
+      "elapsed_s": 1.87,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -331,7 +331,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.63,
+      "elapsed_s": 2.48,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -351,7 +351,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 307
+        "bytes": 305
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -360,7 +360,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 1.03,
+      "elapsed_s": 1.58,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -380,7 +380,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 305
+        "bytes": 307
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -389,7 +389,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 1.62,
+      "elapsed_s": 1.94,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -409,7 +409,7 @@
       },
       "challenge_followed": {
         "status": 200,
-        "bytes": 307
+        "bytes": 305
       },
       "status": 200,
       "content_type": "application/json; charset=utf-8",
@@ -418,7 +418,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 489,
-      "elapsed_s": 1.06,
+      "elapsed_s": 1.17,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1794182400,\"o\":1728.27,\"h\":1728.27,\"l\":1701.9,\"c\":1714.32,\"v\":678512401},{\"t\":1794268800,\"o\":1725.64,\"h\":1743.07,\"l\":1714.32,\"c\":1743.07,\"v\":876999156},{\"t\":1794355200,\"o\":1742.67,\"h\":1751.57,\"l\":1734.25,\"c\":1746.9,\"v\":680426042},{\"t\":1794441600,\"o\":1746.7,\"h\":1746.9,\"l\":1731.",
       "json_s": "ok",
       "n_bars": 6,
@@ -447,7 +447,7 @@
       "via": "mly inter",
       "redirects": [],
       "bytes": 318980,
-      "elapsed_s": 2.09,
+      "elapsed_s": 2.43,
       "body_head": "{\"s\":\"ok\",\"bars\":[{\"t\":1262563200,\"o\":501.74,\"h\":517.05,\"l\":501.74,\"c\":517.05,\"v\":44914820},{\"t\":1262649600,\"o\":529.23,\"h\":539.39,\"l\":529.23,\"c\":532.53,\"v\":70051390},{\"t\":1262736000,\"o\":529.47,\"h\":538.84,\"l\":529.47,\"c\":534.46,\"v\":67363510},{\"t\":1262822400,\"o\":536.78,\"h\":540.77,\"l\":533.34,\"c\":533.34,",
       "json_s": "ok",
       "n_bars": 4206,
@@ -470,7 +470,7 @@
       "via": null,
       "redirects": [],
       "bytes": 101,
-      "elapsed_s": 0.92,
+      "elapsed_s": 1.17,
       "body_head": "{\"success\":false,\"response\":null,\"error\":{\"error_code\":1004,\"message\":\"Invalid stock code: VNINDEX\"}}",
       "json_s": null,
       "n_bars": 0
@@ -490,7 +490,7 @@
       "via": null,
       "redirects": [],
       "bytes": 98,
-      "elapsed_s": 0.94,
+      "elapsed_s": 0.96,
       "body_head": "{\"success\":false,\"response\":null,\"error\":{\"error_code\":1004,\"message\":\"Invalid stock code: VN30\"}}",
       "json_s": null,
       "n_bars": 0
@@ -527,142 +527,142 @@
   ],
   "per_code": {
     "VN100": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VN30": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNALL": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNCOND": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNCONS": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNDIAMOND": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNENE": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNFIN": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNFINLEAD": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNFINSELECT": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNHEAL": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNIND": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNINDEX": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNIT": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNMAT": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNMID": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNREAL": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNSI": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNSML": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNUTI": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNX50": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     },
     "VNXALL": {
-      "fetched": 7,
+      "fetched": 8,
       "from": "2026-11-07",
       "first": "2026-11-09",
-      "last": "2026-11-17"
+      "last": "2026-11-18"
     }
   },
   "summary": {
     "ok": 22,
     "total": 22,
-    "rows_total": 64460,
+    "rows_total": 64482,
     "failed": []
   },
   "status": "ok"
