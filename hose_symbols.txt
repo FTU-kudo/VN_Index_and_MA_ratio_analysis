@@ -1,4 +1,4 @@
-# Auto-generated 2026-11-19 from Yuanta list_stock_info?exchange=HSX
+# Auto-generated 2026-11-20 from Yuanta list_stock_info?exchange=HSX
 AAA
 AAM
 AAN
@@ -16,6 +16,7 @@ ADS
 AFX
 AGG
 AGR
+AMY
 ANT
 ANV
 APG
@@ -34,6 +35,7 @@ BID
 BKG
 BMC
 BMI
+BMJ
 BMP
 BRC
 BSI
