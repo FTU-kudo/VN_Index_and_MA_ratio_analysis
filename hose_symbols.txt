@@ -1,4 +1,4 @@
-# Auto-generated 2026-11-20 from Yuanta list_stock_info?exchange=HSX
+# Auto-generated 2026-11-23 from Yuanta list_stock_info?exchange=HSX
 AAA
 AAM
 AAN
